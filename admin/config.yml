@@ -15,7 +15,7 @@ collections:
     label_singular: 문서
     description: 이미 있는 매뉴얼 문서를 수정합니다. 새 문서는 컨플루언스 발행 파이프라인으로 추가하세요.
     folder: content/articles
-    create: true
+    create: false
     format: json
     extension: json
     # 파일명 = key 필드 값 (예: s1-1.json). 저장 후 key를 바꾸면 새 파일이 생기니 주의.
@@ -71,6 +71,7 @@ collections:
       - label: 다국어 콘텐츠
         name: i18n
         widget: object
+        hint: "⚠️ 한 언어만 수정해도 다른 언어 버전은 자동으로 바뀌지 않아요. 내용이 달라지면 안 되는 수정이라면, 아래 다른 언어 탭에도 똑같이 반영해주세요."
         fields:
           - label: 한국어
             name: ko
