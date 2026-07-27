@@ -421,6 +421,116 @@
         '.beamo-html-editor-preview img { max-width: 100%; }',
         { raw: true },
       );
+
+      // Editor form groups fields by language (한국어/English/日本語) as
+      // separate blocks - the default preview (no registered template) walks
+      // the same field tree but without that grouping made visually obvious.
+      // This custom template renders the three languages as clearly divided
+      // sections instead, reusing the same .beamo-html-editor-preview
+      // typography as the single-field preview above.
+      var LANGUAGES = [
+        { code: 'ko', label: '한국어' },
+        { code: 'en', label: 'English' },
+        { code: 'ja', label: '日本語' },
+      ];
+
+      var ArticlePreview = createClass({
+        render: function () {
+          var entry = this.props.entry;
+          var i18n = entry && entry.getIn ? entry.getIn(['data', 'i18n']) : null;
+          return h(
+            'div',
+            { className: 'beamo-preview-root' },
+            LANGUAGES.map(function (lang) {
+              var title = i18n && i18n.getIn ? i18n.getIn([lang.code, 'title']) : null;
+              var htmlValue = i18n && i18n.getIn ? i18n.getIn([lang.code, 'html']) : null;
+              return h(
+                'div',
+                { key: lang.code, className: 'beamo-lang-section' },
+                h('div', { className: 'beamo-lang-section-label' }, lang.label),
+                title ? h('h1', { className: 'beamo-lang-section-title' }, title) : null,
+                h('div', {
+                  className: 'beamo-html-editor beamo-html-editor-preview',
+                  dangerouslySetInnerHTML: { __html: toPreviewHtml(htmlValue) || '' },
+                }),
+              );
+            }),
+          );
+        },
+      });
+
+      CMS.registerPreviewTemplate('articles', ArticlePreview);
+
+      CMS.registerPreviewStyle(
+        '.beamo-lang-section {' +
+        '  padding-bottom: 1.4rem; margin-bottom: 1.4rem; border-bottom: 1px solid #E3E9F5;' +
+        '}' +
+        '.beamo-lang-section:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }' +
+        '.beamo-lang-section-label {' +
+        '  display: inline-block; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.02em;' +
+        '  color: #0046CC; background: #EAF0FF; border-radius: 999px; padding: 2px 10px; margin-bottom: 0.6rem;' +
+        '}' +
+        '.beamo-lang-section-title { font-size: 1.3rem; font-weight: 800; margin: 0 0 0.6rem; color: #17181A; }',
+        { raw: true },
+      );
+
+      // Scroll sync between the edit pane and preview pane. Decap has no
+      // official API for this - it links the two by their internal class
+      // names (same "hashed class, but the display name survives as a
+      // substring" trick as the login-screen CSS above), which only exist
+      // once an entry is actually open. A MutationObserver re-attaches
+      // listeners whenever those panes (re)appear (switching entries
+      // replaces them), and a `syncing` guard stops the two scroll
+      // listeners from bouncing off each other. This is position-ratio sync
+      // (percentage scrolled), not line-for-line matching - the edit pane
+      // also has metadata fields the preview doesn't show, so the two
+      // panes' content lengths never match exactly. Safe failure: if a
+      // future Decap version renames these classes, scrolling just goes
+      // back to being independent.
+      (function () {
+        var syncing = false;
+        var linked = (typeof WeakSet !== 'undefined') ? new WeakSet() : null;
+
+        function ratio(el) {
+          var max = el.scrollHeight - el.clientHeight;
+          return max > 0 ? el.scrollTop / max : 0;
+        }
+        function applyRatio(el, r) {
+          var max = el.scrollHeight - el.clientHeight;
+          el.scrollTop = max > 0 ? r * max : 0;
+        }
+        function onScroll(source, target) {
+          return function () {
+            if (syncing) return;
+            syncing = true;
+            applyRatio(target, ratio(source));
+            syncing = false;
+          };
+        }
+        function tryLink() {
+          var controlPane = document.querySelector('[class*="ControlPaneContainer"]');
+          var previewPane = document.querySelector('[class*="PreviewPaneContainer"]');
+          if (!controlPane || !previewPane || !linked) return;
+          if (linked.has(controlPane) || linked.has(previewPane)) return;
+          linked.add(controlPane);
+          linked.add(previewPane);
+          controlPane.addEventListener('scroll', onScroll(controlPane, previewPane));
+          previewPane.addEventListener('scroll', onScroll(previewPane, controlPane));
+        }
+
+        var scheduled = false;
+        function scheduleTryLink() {
+          if (scheduled) return;
+          scheduled = true;
+          requestAnimationFrame(function () {
+            scheduled = false;
+            tryLink();
+          });
+        }
+
+        new MutationObserver(scheduleTryLink).observe(document.body, { childList: true, subtree: true });
+        scheduleTryLink();
+      })();
     })();
   </script>
 </body>
