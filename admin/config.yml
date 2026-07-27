@@ -20,9 +20,8 @@ collections:
     extension: json
     # 파일명 = key 필드 값 (예: s1-1.json). 저장 후 key를 바꾸면 새 파일이 생기니 주의.
     slug: "{{key}}"
-    # 문서별 이미지 폴더(images/<key>/...) 구조를 그대로 따라감
-    media_folder: "images/{{key}}"
-    public_folder: "images/{{key}}"
+    # 문서별 폴더로 나누지 않고, 위 전역 media_folder(images/)를 그대로 씀 -
+    # Media 탭에서 올린 파일과 문서 안에서 삽입하는 파일이 같은 폴더/라이브러리를 보게 하기 위함
     fields:
       - label: "Key (문서 ID)"
         name: key

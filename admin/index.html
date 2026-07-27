@@ -123,10 +123,68 @@
   -->
   <script>
     (function () {
+      // The saved HTML always stores plain relative image paths
+      // ("images/<key>/file.png"), which is correct on the real site (its
+      // pages live at the site root). This /admin/ page lives one folder
+      // deeper, so that same relative path resolves to the wrong place
+      // ("/admin/images/...", a 404) if shown as-is while editing. These
+      // two helpers keep the DISPLAYED src pointing at the real location
+      // without changing what actually gets saved.
+      function siteRootFromAdminUrl() {
+        var href = window.location.href;
+        var idx = href.indexOf('/admin/');
+        if (idx === -1) idx = href.indexOf('/admin');
+        return idx !== -1 ? href.slice(0, idx + 1) : href;
+      }
+      function toPreviewSrc(cleanPath) {
+        if (!cleanPath) return cleanPath;
+        if (/^([a-z][a-z0-9+.-]*:)?\/\//i.test(cleanPath) || cleanPath.charAt(0) === '/') {
+          return cleanPath; // already absolute/root-relative/external - leave alone
+        }
+        return siteRootFromAdminUrl() + cleanPath;
+      }
+      // Swaps every <img>'s displayed src for the real (savable) path -
+      // used right before onChange so we never persist the resolved
+      // preview URL. Operates on a detached clone so the on-screen,
+      // resolved-for-preview images aren't disturbed.
+      function cloneWithCleanImageSrcs(el) {
+        var clone = el.cloneNode(true);
+        var imgs = clone.querySelectorAll('img[data-real-src]');
+        Array.prototype.forEach.call(imgs, function (img) {
+          img.setAttribute('src', img.getAttribute('data-real-src'));
+          img.removeAttribute('data-real-src');
+        });
+        return clone.innerHTML;
+      }
+      // Opposite direction - after loading saved HTML (which has clean
+      // paths) into the live contentEditable, stash the clean path and
+      // point the visible src at something that actually loads here.
+      function fixImagePreviews(el) {
+        var imgs = el.querySelectorAll('img[src]:not([data-real-src])');
+        Array.prototype.forEach.call(imgs, function (img) {
+          var real = img.getAttribute('src');
+          img.setAttribute('data-real-src', real);
+          img.setAttribute('src', toPreviewSrc(real));
+        });
+      }
+      // Same idea, but for the read-only preview pane, which only ever
+      // gets a raw HTML string (not a live element) to render.
+      function toPreviewHtml(html) {
+        if (!html) return html;
+        var container = document.createElement('div');
+        container.innerHTML = html;
+        var imgs = container.querySelectorAll('img[src]');
+        Array.prototype.forEach.call(imgs, function (img) {
+          img.setAttribute('src', toPreviewSrc(img.getAttribute('src')));
+        });
+        return container.innerHTML;
+      }
+
       var HtmlWysiwygControl = createClass({
         componentDidMount: function () {
           if (this.el) {
             this.el.innerHTML = this.props.value || '';
+            fixImagePreviews(this.el);
           }
         },
         shouldComponentUpdate: function (nextProps) {
@@ -158,7 +216,7 @@
           return this._mediaControlID;
         },
         handleInput: function () {
-          this.props.onChange(this.el.innerHTML);
+          this.props.onChange(cloneWithCleanImageSrcs(this.el));
         },
         saveSelection: function () {
           var sel = window.getSelection();
@@ -169,7 +227,8 @@
         insertImageAtSavedRange: function (path) {
           if (!this.el) return;
           var img = document.createElement('img');
-          img.src = path;
+          img.setAttribute('data-real-src', path);
+          img.setAttribute('src', toPreviewSrc(path));
           img.alt = '';
 
           if (this.savedRange && this.el.contains(this.savedRange.startContainer)) {
@@ -329,7 +388,7 @@
         render: function () {
           return h('div', {
             className: 'beamo-html-editor beamo-html-editor-preview',
-            dangerouslySetInnerHTML: { __html: this.props.value || '' },
+            dangerouslySetInnerHTML: { __html: toPreviewHtml(this.props.value) || '' },
           });
         },
       });
