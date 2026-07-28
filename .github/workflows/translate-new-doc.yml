@@ -1,0 +1,84 @@
+name: Translate & Register New Manual Doc
+
+# 컨플루언스에 새로 쓴 문서를 번역해서 이 사이트(content/articles/*.json)에 등록하고,
+# 컨플루언스 한국어/일본어 페이지에도 게시한 뒤 이 저장소에 PR을 엽니다.
+# 로컬(Mac) Automator 버튼과 같은 파이썬 스크립트(publish_to_site.py)를 공유합니다 —
+# 자세한 내용은 saranmoon-ai/Beamo---Sync- 저장소의 HANDOVER.md 참고.
+
+on:
+  workflow_dispatch:
+    inputs:
+      confluence_url:
+        description: "번역할 Confluence 페이지 URL"
+        required: true
+        type: string
+      feature:
+        description: "카테고리 (getting-started / survey / 3d-workspace / admin / appendix / whats-new) — 신규 문서일 때만 필요"
+        required: false
+        type: string
+      version:
+        description: "버전 (3.0 또는 2.0) — 신규 문서일 때만 필요"
+        required: false
+        type: string
+      platform:
+        description: "플랫폼, 쉼표로 구분 (예: web,aos) — 신규 문서일 때만 필요"
+        required: false
+        type: string
+      user:
+        description: "대상 사용자, 쉼표로 구분 (예: all,surveyor) — 신규 문서일 때만 필요"
+        required: false
+        type: string
+      step:
+        description: "스텝(챕터) 번호 — 신규 문서일 때만 필요"
+        required: false
+        type: string
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  translate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout site repo
+        uses: actions/checkout@v4
+        with:
+          path: site
+
+      - name: Checkout translation tools repo
+        uses: actions/checkout@v4
+        with:
+          repository: saranmoon-ai/Beamo---Sync-
+          path: sync-tools
+          token: ${{ secrets.SYNC_REPO_TOKEN }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: Install dependencies
+        run: pip install requests anthropic markdownify
+
+      - name: Configure git identity
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Run translation pipeline
+        env:
+          CONF_EMAIL: ${{ secrets.CONF_EMAIL }}
+          CONF_TOKEN: ${{ secrets.CONF_TOKEN }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          SITE_DIR: ${{ github.workspace }}/site
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          cd sync-tools
+          ARGS=("${{ github.event.inputs.confluence_url }}")
+          [ -n "${{ github.event.inputs.feature }}" ]  && ARGS+=(--feature  "${{ github.event.inputs.feature }}")
+          [ -n "${{ github.event.inputs.version }}" ]  && ARGS+=(--version  "${{ github.event.inputs.version }}")
+          [ -n "${{ github.event.inputs.platform }}" ] && ARGS+=(--platform "${{ github.event.inputs.platform }}")
+          [ -n "${{ github.event.inputs.user }}" ]     && ARGS+=(--user     "${{ github.event.inputs.user }}")
+          [ -n "${{ github.event.inputs.step }}" ]     && ARGS+=(--step     "${{ github.event.inputs.step }}")
+          python3 publish_to_site.py "${ARGS[@]}"
