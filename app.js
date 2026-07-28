@@ -62,6 +62,153 @@ function stripHtml(html) {
     .trim();
 }
 
+/* ---------- search: fuzzy/typo-tolerant, relevance-ranked, with highlighted snippets ---------- */
+const TOKEN_SPLIT_RE = /[\s,.!?()·""''`:;/\\|[\]{}<>]+/;
+
+function tokenize(text) {
+  return text.split(TOKEN_SPLIT_RE).filter(Boolean);
+}
+
+function levenshtein(a, b) {
+  if (a === b) return 0;
+  const al = a.length, bl = b.length;
+  if (al === 0) return bl;
+  if (bl === 0) return al;
+  let prev = new Array(bl + 1);
+  let curr = new Array(bl + 1);
+  for (let j = 0; j <= bl; j++) prev[j] = j;
+  for (let i = 1; i <= al; i++) {
+    curr[0] = i;
+    for (let j = 1; j <= bl; j++) {
+      const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+      curr[j] = Math.min(curr[j - 1] + 1, prev[j] + 1, prev[j - 1] + cost);
+    }
+    [prev, curr] = [curr, prev];
+  }
+  return prev[bl];
+}
+
+// how many edits count as "close enough" for a typo, scaled by word length
+// (mirrors common search-engine "auto fuzziness" scaling: very short tokens are
+// too ambiguous for edit-distance matching, so require an exact hit instead)
+function fuzzyTolerance(len) {
+  if (len <= 2) return 0;
+  if (len <= 5) return 1;
+  if (len <= 9) return 2;
+  return 3;
+}
+
+function countOccurrences(hay, needle) {
+  if (!needle) return 0;
+  let count = 0, pos = 0;
+  while (true) {
+    const idx = hay.indexOf(needle, pos);
+    if (idx === -1) break;
+    count++;
+    pos = idx + needle.length;
+  }
+  return count;
+}
+
+// exact substring match first; falls back to nearest-word edit-distance match
+// so near-miss/typo'd search terms still surface relevant docs
+function bestTokenMatch(token, textLower, wordsLower) {
+  const occurrences = countOccurrences(textLower, token);
+  if (occurrences > 0) return { type: "exact", occurrences };
+  const tol = fuzzyTolerance(token.length);
+  if (tol === 0) return { type: "none" };
+  let bestWord = null, bestDist = Infinity;
+  for (const w of wordsLower) {
+    if (Math.abs(w.length - token.length) > tol) continue;
+    const d = levenshtein(token, w);
+    if (d < bestDist) { bestDist = d; bestWord = w; }
+    if (bestDist === 0) break;
+  }
+  if (bestWord !== null && bestDist <= tol) {
+    return { type: "fuzzy", occurrences: 1, matchedWord: bestWord };
+  }
+  return { type: "none" };
+}
+
+function highlightTerms(text, tokens) {
+  const escaped = [...new Set(tokens)]
+    .filter(t => t.length >= 2)
+    .sort((a, b) => b.length - a.length)
+    .map(t => t.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"));
+  if (!escaped.length) return escapeHtml(text);
+  const re = new RegExp("(" + escaped.join("|") + ")", "gi");
+  return text.split(re).map((part, i) => (i % 2 === 1 ? `<mark>${escapeHtml(part)}</mark>` : escapeHtml(part))).join("");
+}
+
+function buildSnippet(bodyPlain, pos, tokens, radius = 60) {
+  let snippet, prefixEllipsis = false, suffixEllipsis = false;
+  if (pos === -1) {
+    snippet = bodyPlain.length > 120 ? bodyPlain.slice(0, 120) : bodyPlain;
+    suffixEllipsis = bodyPlain.length > 120;
+  } else {
+    const start = Math.max(0, pos - radius);
+    const end = Math.min(bodyPlain.length, pos + radius);
+    snippet = bodyPlain.slice(start, end);
+    prefixEllipsis = start > 0;
+    suffixEllipsis = end < bodyPlain.length;
+  }
+  const highlighted = highlightTerms(snippet, tokens);
+  return (prefixEllipsis ? "…" : "") + highlighted + (suffixEllipsis ? "…" : "");
+}
+
+function searchArticles(query) {
+  const tokens = tokenize(query.toLowerCase());
+  if (!tokens.length) return [];
+
+  const results = [];
+  for (const a of ARTICLES) {
+    const c = a.i18n[state.lang] || a.i18n.en;
+    const titleLower = c.title.toLowerCase();
+    const bodyPlain = stripHtml(c.html);
+    const bodyLower = bodyPlain.toLowerCase();
+    const titleWords = tokenize(titleLower);
+    const bodyWords = tokenize(bodyLower);
+
+    let rawScore = 0;
+    let matchedCount = 0;
+    let snippetPos = -1;
+
+    const highlightWords = new Set(tokens);
+
+    for (const token of tokens) {
+      const titleMatch = bestTokenMatch(token, titleLower, titleWords);
+      const bodyMatch = bestTokenMatch(token, bodyLower, bodyWords);
+
+      let tokenScore = 0;
+      if (titleMatch.type === "exact") tokenScore += 12;
+      else if (titleMatch.type === "fuzzy") { tokenScore += 6; highlightWords.add(titleMatch.matchedWord); }
+
+      if (bodyMatch.type === "exact") tokenScore += 3 + Math.min(bodyMatch.occurrences, 5);
+      else if (bodyMatch.type === "fuzzy") { tokenScore += 2; highlightWords.add(bodyMatch.matchedWord); }
+
+      if (tokenScore > 0) {
+        matchedCount++;
+        if (snippetPos === -1) {
+          const term = bodyMatch.type === "exact" ? token : bodyMatch.matchedWord;
+          const idx = term ? bodyLower.indexOf(term) : -1;
+          if (idx !== -1) snippetPos = idx;
+        }
+      }
+      rawScore += tokenScore;
+    }
+
+    if (rawScore === 0) continue;
+    // full-coverage matches (all query words found) rank well above partial ones
+    const coverage = matchedCount / tokens.length;
+    const score = rawScore * (0.4 + 0.6 * coverage);
+
+    results.push({ article: a, score, matchedTokens: [...highlightWords], snippetPos, bodyPlain });
+  }
+
+  results.sort((x, y) => y.score - x.score);
+  return results;
+}
+
 function matchesAxisValue(article, axis, value) {
   switch (axis) {
     case "version":
@@ -87,16 +234,6 @@ function getArticlesFor(axis, value) {
       if (a.version !== b.version) return a.version === "3.0" ? -1 : 1;
       return (a.order || 0) - (b.order || 0);
     });
-}
-
-function searchArticles(query) {
-  const q = query.trim().toLowerCase();
-  if (!q) return [];
-  return ARTICLES.filter(a => {
-    const c = a.i18n[state.lang] || a.i18n.en;
-    const hay = (c.title + " " + stripHtml(c.html)).toLowerCase();
-    return hay.includes(q);
-  });
 }
 
 function valueLabel(axis, value) {
@@ -366,7 +503,7 @@ function renderResultArea() {
     }
     areaEl.innerHTML =
       `<div class="search-info">"<b>${escapeHtml(state.searchQuery)}</b>" ${escapeHtml(t().searchResultsCount)}: <b>${results.length}</b></div>` +
-      renderArticleCards(results);
+      renderSearchResultCards(results);
     bindArticleCards(areaEl);
     return;
   }
@@ -405,6 +542,20 @@ function renderArticleCards(list) {
       <div>
         <div class="a-title">${escapeHtml(c.title)}</div>
         <div class="a-snippet">${escapeHtml(snippetFor(a))}</div>
+      </div>
+    </div>`;
+  }).join("");
+}
+
+function renderSearchResultCards(results) {
+  return results.map(r => {
+    const a = r.article;
+    const c = a.i18n[state.lang] || a.i18n.en;
+    return `<div class="article-card" data-key="${a.key}">
+      <span class="badge">${escapeHtml(articleBadge(a))}</span>
+      <div>
+        <div class="a-title">${highlightTerms(c.title, r.matchedTokens)}</div>
+        <div class="a-snippet">${buildSnippet(r.bodyPlain, r.snippetPos, r.matchedTokens)}</div>
       </div>
     </div>`;
   }).join("");
