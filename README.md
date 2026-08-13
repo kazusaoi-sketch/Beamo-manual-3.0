@@ -26,7 +26,11 @@ content-data.js 는 빌드 산출물입니다. content/articles/*.json 을 전�
 
 ## 자동 빌드
 
-content/articles 경로가 변경되어 push되면 GitHub Actions(.github/workflows/build-content.yml)가 scripts/build_content.py 를 실행해 content-data.js 를 재생성하고, 바뀐 내용을 github-actions[bot] 이름으로 자동 커밋합니다. 커밋 기록에 github-actions[bot]이 보이는 것은 정상입니다.
+content/articles 경로가 변경되어 push되면 GitHub Actions(.github/workflows/build-content.yml)가 scripts/build_content.py 를 실행해 content-data.js 를 재생성하고, scripts/update_readme_changelog.py 를 실행해 아래 "변경 이력" 섹션에 항목을 추가한 뒤, 바뀐 내용을 github-actions[bot] 이름으로 자동 커밋합니다. 커밋 기록에 github-actions[bot]이 보이는 것은 정상입니다.
+
+## 변경 이력
+
+매뉴얼 문서(content/articles) 변경사항이 자동으로 기록됩니다. 최신 항목이 위에 오도록 정렬됩니다.
 
 ## 주요 파일
 
@@ -46,6 +50,8 @@ scripts/build_content.py는 content/articles의 json 파일들을 content-data.j
 
 scripts/split_content.py는 과거 1회성 마이그레이션 스크립트입니다(이미 실행 완료, 참고용).
 
-.github/workflows/build-content.yml은 콘텐츠 변경 시 자동 빌드를 실행합니다.
+scripts/update_readme_changelog.py는 content/articles 변경분을 커밋 전/후로 비교해 README.md의 "변경 이력" 섹션에 항목을 추가하는 스크립트로, 자동 빌드가 사용합니다.
+
+.github/workflows/build-content.yml은 콘텐츠 변경 시 자동 빌드와 README 변경 이력 기록을 실행합니다.
 
 .github/workflows/translate-new-doc.yml은 신규 문서 번역과 등록 워크플로입니다. 실제 번역 파이프라인 코드는 별도 저장소 saranmoon-ai/Beamo---Sync- 에 있습니다.
