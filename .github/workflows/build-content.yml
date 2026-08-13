@@ -16,10 +16,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          # Push back with the default token, but don't re-trigger this
-          # workflow (paths filter only matches content/articles/** anyway,
-          # and this job never touches that folder).
-          fetch-depth: 1
+          # update_readme_changelog.py diffs content/articles between the
+          # before/after commits of this push, so we need full history here
+          # (not just the latest commit).
+          fetch-depth: 0
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -29,14 +29,20 @@ jobs:
       - name: Rebuild content-data.js
         run: python3 scripts/build_content.py
 
+      - name: Update README changelog
+        env:
+          BEFORE_SHA: ${{ github.event.before }}
+          AFTER_SHA: ${{ github.event.after }}
+        run: python3 scripts/update_readme_changelog.py
+
       - name: Commit and push if changed
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          if git diff --quiet -- content-data.js; then
-            echo "content-data.js unchanged, nothing to commit"
+          if git diff --quiet -- content-data.js README.md; then
+            echo "nothing to commit"
           else
-            git add content-data.js
-            git commit -m "chore: rebuild content-data.js from content/articles"
+            git add content-data.js README.md
+            git commit -m "chore: rebuild content-data.js and update README changelog"
             git push
           fi
