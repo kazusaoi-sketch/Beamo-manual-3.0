@@ -37,10 +37,17 @@ def load_tiebreak_index():
         keys = json.load(f)
     return {key: i for i, key in enumerate(keys)}
 
+def warn_duplicate_orders(articles, tiebreak_index):
+    from collections import defaultdict
+    groups = defaultdict(list)
+    [groups[a.get("order", 0)].append(a["key"]) for a in articles]
+    dups = {o: ks for o, ks in groups.items() if len(ks) > 1 and any(k not in tiebreak_index for k in ks)}
+    [print("WARNING: order=" + str(o) + " 값이 겹치는 문서가 있는데 일부가 _order-manifest.json에 없어 표시 순서가 예상과 다를 수 있습니다: " + ", ".join(ks)) for o, ks in sorted(dups.items())]
 
 def main():
     articles = load_articles()
     tiebreak_index = load_tiebreak_index()
+    warn_duplicate_orders(articles, tiebreak_index)
     unknown_tiebreak = len(tiebreak_index)
     articles.sort(key=lambda a: (a.get("order", 0), tiebreak_index.get(a["key"], unknown_tiebreak)))
 
