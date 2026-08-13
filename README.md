@@ -32,6 +32,7 @@ content/articles 경로가 변경되어 push되면 GitHub Actions(.github/workfl
 
 매뉴얼 문서(content/articles) 변경사항이 자동으로 기록됩니다. 최신 항목이 위에 오도록 정렬됩니다.
 
+- 2026-08-13: '인터벌 슈팅을 통해 캡처하기' 문서 수정 (`v2-capture-interval`)
 ## 주요 파일
 
 index.html은 메인 페이지이자 스크립트 로드 순서를 관리합니다.
