@@ -330,6 +330,17 @@
           }
           return null;
         },
+        // Generic ancestor walk used by insertImageAtSavedRange - finds the
+        // nearest ancestor of `node` (inside this.el) with the given tag.
+        findAncestorTag: function (node, tagName) {
+          var n = node;
+          if (n && n.nodeType === 3) n = n.parentNode;
+          while (n && n !== this.el) {
+            if (n.nodeType === 1 && n.tagName === tagName) return n;
+            n = n.parentNode;
+          }
+          return null;
+        },
         // Moves the caret into a cell after a row/column insert or delete,
         // so the user can keep typing right away instead of losing focus.
         focusCell: function (cellEl) {
@@ -351,15 +362,33 @@
           img.alt = '';
  
           if (this.savedRange && this.el.contains(this.savedRange.startContainer)) {
-            var sel = window.getSelection();
-            sel.removeAllRanges();
-            sel.addRange(this.savedRange);
-            this.savedRange.deleteContents();
-            this.savedRange.insertNode(img);
-            this.savedRange.setStartAfter(img);
-            this.savedRange.collapse(true);
-            sel.removeAllRanges();
-            sel.addRange(this.savedRange);
+            // "모아보기" style callout boxes are rendered as <blockquote>.
+            // Dropping a full-width image inside one breaks its box styling
+            // and buries the image inside a colored strip, which reads as
+            // "the image went to a random spot" - so when the cursor is
+            // inside a blockquote, place the image right after the box
+            // instead of nesting it inside.
+            var blockquote = this.findAncestorTag(this.savedRange.startContainer, 'BLOCKQUOTE');
+            if (blockquote && blockquote.parentNode) {
+              blockquote.parentNode.insertBefore(img, blockquote.nextSibling);
+              var afterRange = document.createRange();
+              afterRange.setStartAfter(img);
+              afterRange.collapse(true);
+              this.savedRange = afterRange;
+              var sel2 = window.getSelection();
+              sel2.removeAllRanges();
+              sel2.addRange(afterRange);
+            } else {
+              var sel = window.getSelection();
+              sel.removeAllRanges();
+              sel.addRange(this.savedRange);
+              this.savedRange.deleteContents();
+              this.savedRange.insertNode(img);
+              this.savedRange.setStartAfter(img);
+              this.savedRange.collapse(true);
+              sel.removeAllRanges();
+              sel.addRange(this.savedRange);
+            }
           } else {
             this.el.appendChild(img);
           }
