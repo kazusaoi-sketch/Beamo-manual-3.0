@@ -14,7 +14,7 @@
       no supported theming API - only the preview pane can be themed
       officially). If a future Decap update renames these components, these
       rules just silently stop matching (safe failure - nothing breaks).
-
+ 
       This pass only covers the pre-login screen, which is all we can see
       without actually signing in. The signed-in screens (sidebar, entry
       editor, save button) aren't covered yet.
@@ -24,11 +24,11 @@
       --beamo-accent-hover: #3370DB;
       --beamo-bg: #F5F8FF;
     }
-
+ 
     body {
       background: var(--beamo-bg) !important;
     }
-
+ 
     /* Decap wordmark -> Beamo logo */
     span[class*="DecapLogoIcon"] svg {
       display: none;
@@ -42,7 +42,7 @@
       background-position: center;
       background-size: contain;
     }
-
+ 
     /* Login button -> Beamo blue */
     button[class*="LoginButton"] {
       background-color: var(--beamo-accent) !important;
@@ -51,7 +51,7 @@
     button[class*="LoginButton"]:hover {
       background-color: var(--beamo-accent-hover) !important;
     }
-
+ 
     /* Custom "html-wysiwyg" widget (see script below) */
     .beamo-html-editor {
       min-height: 220px;
@@ -83,7 +83,32 @@
       color: #4E4E4E;
     }
     .beamo-html-editor img { max-width: 100%; }
-
+    /* Mirrors the live site's .article-body table styling (style.css) so
+       what you see here while editing matches what actually gets
+       published - the table itself was always real HTML/DOM, it just had
+       zero CSS applied inside this editor box before. */
+    .beamo-html-editor table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 12px 0 20px;
+      font-size: 0.92em;
+    }
+    .beamo-html-editor th,
+    .beamo-html-editor td {
+      border: 1px solid #E8E8E8;
+      padding: 9px 11px;
+      text-align: left;
+      vertical-align: top;
+    }
+    .beamo-html-editor thead th {
+      background: #F8F9FB;
+      font-weight: 700;
+    }
+    .beamo-html-editor td[colspan] {
+      background: #E6EEFF;
+      font-weight: 600;
+    }
+ 
     .beamo-insert-image-btn {
       display: inline-flex;
       align-items: center;
@@ -103,12 +128,52 @@
       background: var(--beamo-accent);
       color: #fff;
     }
+ 
+    /* Row/column controls for tables - only enabled while the cursor sits
+       inside a table cell (see HtmlWysiwygControl.state.inTableCell). */
+    .beamo-table-toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 6px;
+      margin: 0 0 8px;
+      padding: 6px 8px;
+      background: #FAFBFF;
+      border: 1px dashed #C9D6F5;
+      border-radius: 6px;
+    }
+    .beamo-table-toolbar-label {
+      font-size: 12px;
+      color: #6B7280;
+      margin-right: 2px;
+    }
+    .beamo-table-btn {
+      padding: 4px 9px;
+      font-size: 12.5px;
+      font-weight: 600;
+      color: var(--beamo-accent);
+      background: #fff;
+      border: 1px solid var(--beamo-accent);
+      border-radius: 6px;
+      cursor: pointer;
+      font-family: inherit;
+    }
+    .beamo-table-btn:hover:not(:disabled) {
+      background: var(--beamo-accent);
+      color: #fff;
+    }
+    .beamo-table-btn:disabled {
+      color: #B7BEC9;
+      border-color: #DDE2EA;
+      background: #F4F5F7;
+      cursor: not-allowed;
+    }
   </style>
 </head>
 <body>
   <!-- Decap CMS (formerly Netlify CMS) loaded from CDN - no build step needed. -->
   <script src="https://unpkg.com/decap-cms@^3.0.0/dist/decap-cms.js"></script>
-
+ 
   <!--
     Decap has no built-in widget that edits raw HTML with a rendered,
     directly-editable view - "markdown"/"richtext" both store markdown, and
@@ -117,7 +182,7 @@
     (Decap's documented registerWidget extension point, not a hack) that
     shows the real rendered HTML in a contentEditable box and writes
     whatever you type straight back as HTML - no markdown round-trip.
-
+ 
     `createClass` and `h` (React.createElement) are exposed as globals by
     decap-cms.js itself, so no separate React script tag is needed.
   -->
@@ -179,7 +244,7 @@
         });
         return container.innerHTML;
       }
-
+ 
       var HtmlWysiwygControl = createClass({
         componentDidMount: function () {
           if (this.el) {
@@ -187,14 +252,22 @@
             fixImagePreviews(this.el);
           }
         },
-        shouldComponentUpdate: function (nextProps) {
+        getInitialState: function () {
+          return { inTableCell: false };
+        },
+        shouldComponentUpdate: function (nextProps, nextState) {
           // This node's content is owned by the browser (contentEditable),
           // not React - letting React re-render it on every keystroke would
-          // reset the cursor to the start each time. The one exception is
-          // mediaPaths: that's how Decap hands back a picked/uploaded image,
-          // and componentDidUpdate (which only fires when this returns
-          // true) is what we use to notice it.
-          return nextProps.mediaPaths !== this.props.mediaPaths;
+          // reset the cursor to the start each time. The exceptions are
+          // mediaPaths (that's how Decap hands back a picked/uploaded image,
+          // and componentDidUpdate - which only fires when this returns
+          // true - is what we use to notice it) and inTableCell (toggles the
+          // table row/column buttons; safe to re-render for, since that div
+          // has no React children to reconcile - see render() below).
+          return (
+            nextProps.mediaPaths !== this.props.mediaPaths ||
+            nextState.inTableCell !== this.state.inTableCell
+          );
         },
         componentDidUpdate: function () {
           var mediaPaths = this.props.mediaPaths;
@@ -223,6 +296,39 @@
           if (sel && sel.rangeCount > 0 && this.el && this.el.contains(sel.anchorNode)) {
             this.savedRange = sel.getRangeAt(0).cloneRange();
           }
+          var inTableCell = !!this.getCurrentCell();
+          if (inTableCell !== this.state.inTableCell) {
+            this.setState({ inTableCell: inTableCell });
+          }
+        },
+        // Walks up from the saved selection to the nearest <td>/<th>, or
+        // null when the cursor isn't inside a table right now. This is what
+        // the row/column buttons act on, and what enables/disables them.
+        getCurrentCell: function () {
+          var range = this.savedRange;
+          if (!range || !this.el) return null;
+          var node = range.startContainer;
+          if (node.nodeType === 3) node = node.parentNode;
+          while (node && node !== this.el) {
+            if (node.nodeType === 1 && (node.tagName === 'TD' || node.tagName === 'TH')) {
+              return node;
+            }
+            node = node.parentNode;
+          }
+          return null;
+        },
+        // Moves the caret into a cell after a row/column insert or delete,
+        // so the user can keep typing right away instead of losing focus.
+        focusCell: function (cellEl) {
+          if (!cellEl || !this.el) return;
+          this.el.focus();
+          var range = document.createRange();
+          range.selectNodeContents(cellEl);
+          range.collapse(true);
+          var sel = window.getSelection();
+          sel.removeAllRanges();
+          sel.addRange(range);
+          this.savedRange = range.cloneRange();
         },
         insertImageAtSavedRange: function (path) {
           if (!this.el) return;
@@ -230,7 +336,7 @@
           img.setAttribute('data-real-src', path);
           img.setAttribute('src', toPreviewSrc(path));
           img.alt = '';
-
+ 
           if (this.savedRange && this.el.contains(this.savedRange.startContainer)) {
             var sel = window.getSelection();
             sel.removeAllRanges();
@@ -273,7 +379,7 @@
           if (!this.el) return;
           var url = window.prompt('연결할 주소(URL)를 입력하세요:', 'https://');
           if (!url) return;
-
+ 
           this.el.focus();
           var sel = window.getSelection();
           if (this.savedRange && this.el.contains(this.savedRange.startContainer)) {
@@ -304,7 +410,7 @@
           if (!key) return;
           key = key.trim();
           if (!key) return;
-
+ 
           this.el.focus();
           var sel = window.getSelection();
           var range;
@@ -317,20 +423,116 @@
           }
           sel.removeAllRanges();
           sel.addRange(range);
-
+ 
           var selectedText = range.toString();
           var a = document.createElement('a');
           a.setAttribute('href', 'javascript:void(0)');
           a.setAttribute('data-goto-key', key);
           a.textContent = selectedText || key;
-
+ 
           range.deleteContents();
           range.insertNode(a);
           range.setStartAfter(a);
           range.collapse(true);
           sel.removeAllRanges();
           sel.addRange(range);
-
+ 
+          this.handleInput();
+        },
+        handleTableToolMouseDown: function (e) {
+          // Same trick as the image/link buttons above: preventDefault keeps
+          // focus (and the browser's current selection) on the
+          // contentEditable box, so getCurrentCell() below still resolves
+          // the cell the cursor was actually in when the button was clicked.
+          e.preventDefault();
+          this.saveSelection();
+        },
+        insertRow: function (position) {
+          var cell = this.getCurrentCell();
+          if (!cell) return;
+          var row = cell.parentElement;
+          if (!row || row.tagName !== 'TR') return;
+          var section = row.parentElement; // <thead> or <tbody>
+          if (!section) return;
+          var isHeaderRow = section.tagName === 'THEAD';
+          var newRow = document.createElement('tr');
+          for (var i = 0; i < row.children.length; i++) {
+            newRow.appendChild(document.createElement(isHeaderRow ? 'th' : 'td'));
+          }
+          section.insertBefore(newRow, position === 'above' ? row : row.nextSibling);
+          this.focusCell(newRow.children[0]);
+          this.handleInput();
+        },
+        handleInsertRowAbove: function () { this.insertRow('above'); },
+        handleInsertRowBelow: function () { this.insertRow('below'); },
+        handleDeleteRow: function () {
+          var cell = this.getCurrentCell();
+          if (!cell) return;
+          var row = cell.parentElement;
+          if (!row || row.tagName !== 'TR') return;
+          var table = row.closest('table');
+          var totalRows = table ? table.querySelectorAll('tr').length : 0;
+          if (totalRows <= 1) {
+            window.alert(
+              '표에 행이 하나만 남아 있어요. 표 전체를 지우고 싶으면 표 바깥에서부터 표 전체를 드래그로 선택한 뒤 Delete를 눌러주세요.',
+            );
+            return;
+          }
+          var section = row.parentElement;
+          var nextFocusRow = row.nextElementSibling || row.previousElementSibling;
+          section.removeChild(row);
+          this.savedRange = null;
+          this.setState({ inTableCell: false });
+          if (nextFocusRow && nextFocusRow.children[0]) {
+            this.focusCell(nextFocusRow.children[0]);
+          }
+          this.handleInput();
+        },
+        insertColumn: function (side) {
+          var cell = this.getCurrentCell();
+          if (!cell) return;
+          var row = cell.parentElement;
+          var table = row ? row.closest('table') : null;
+          if (!table) return;
+          var colIndex = Array.prototype.indexOf.call(row.children, cell);
+          var newCellInCurrentRow = null;
+          Array.prototype.forEach.call(table.querySelectorAll('tr'), function (tr) {
+            var isHeaderRow = tr.parentElement && tr.parentElement.tagName === 'THEAD';
+            var newCell = document.createElement(isHeaderRow ? 'th' : 'td');
+            var refCell = tr.children[colIndex];
+            if (side === 'left') {
+              if (refCell) tr.insertBefore(newCell, refCell);
+              else tr.appendChild(newCell);
+            } else {
+              if (refCell && refCell.nextSibling) tr.insertBefore(newCell, refCell.nextSibling);
+              else tr.appendChild(newCell);
+            }
+            if (tr === row) newCellInCurrentRow = newCell;
+          });
+          this.focusCell(newCellInCurrentRow);
+          this.handleInput();
+        },
+        handleInsertColumnLeft: function () { this.insertColumn('left'); },
+        handleInsertColumnRight: function () { this.insertColumn('right'); },
+        handleDeleteColumn: function () {
+          var cell = this.getCurrentCell();
+          if (!cell) return;
+          var row = cell.parentElement;
+          var table = row ? row.closest('table') : null;
+          if (!table) return;
+          if (row.children.length <= 1) {
+            window.alert(
+              '표에 열이 하나만 남아 있어요. 표 전체를 지우고 싶으면 표 바깥에서부터 표 전체를 드래그로 선택한 뒤 Delete를 눌러주세요.',
+            );
+            return;
+          }
+          var colIndex = Array.prototype.indexOf.call(row.children, cell);
+          Array.prototype.forEach.call(table.querySelectorAll('tr'), function (tr) {
+            var c = tr.children[colIndex];
+            if (c) tr.removeChild(c);
+          });
+          this.savedRange = null;
+          this.setState({ inTableCell: false });
           this.handleInput();
         },
         render: function () {
@@ -370,6 +572,81 @@
               },
               '📄 문서 링크',
             ),
+            h(
+              'div',
+              { className: 'beamo-table-toolbar' },
+              h(
+                'span',
+                { className: 'beamo-table-toolbar-label' },
+                self.state.inTableCell ? '표 편집:' : '표 편집 (표 안에 커서를 두면 켜져요):',
+              ),
+              h(
+                'button',
+                {
+                  type: 'button',
+                  className: 'beamo-table-btn',
+                  disabled: !self.state.inTableCell,
+                  onMouseDown: this.handleTableToolMouseDown,
+                  onClick: this.handleInsertRowAbove,
+                },
+                '행 위에 추가',
+              ),
+              h(
+                'button',
+                {
+                  type: 'button',
+                  className: 'beamo-table-btn',
+                  disabled: !self.state.inTableCell,
+                  onMouseDown: this.handleTableToolMouseDown,
+                  onClick: this.handleInsertRowBelow,
+                },
+                '행 아래 추가',
+              ),
+              h(
+                'button',
+                {
+                  type: 'button',
+                  className: 'beamo-table-btn',
+                  disabled: !self.state.inTableCell,
+                  onMouseDown: this.handleTableToolMouseDown,
+                  onClick: this.handleDeleteRow,
+                },
+                '행 삭제',
+              ),
+              h(
+                'button',
+                {
+                  type: 'button',
+                  className: 'beamo-table-btn',
+                  disabled: !self.state.inTableCell,
+                  onMouseDown: this.handleTableToolMouseDown,
+                  onClick: this.handleInsertColumnLeft,
+                },
+                '열 왼쪽 추가',
+              ),
+              h(
+                'button',
+                {
+                  type: 'button',
+                  className: 'beamo-table-btn',
+                  disabled: !self.state.inTableCell,
+                  onMouseDown: this.handleTableToolMouseDown,
+                  onClick: this.handleInsertColumnRight,
+                },
+                '열 오른쪽 추가',
+              ),
+              h(
+                'button',
+                {
+                  type: 'button',
+                  className: 'beamo-table-btn',
+                  disabled: !self.state.inTableCell,
+                  onMouseDown: this.handleTableToolMouseDown,
+                  onClick: this.handleDeleteColumn,
+                },
+                '열 삭제',
+              ),
+            ),
             h('div', {
               id: this.props.forID,
               className: (this.props.classNameWrapper || '') + ' beamo-html-editor',
@@ -383,7 +660,7 @@
           );
         },
       });
-
+ 
       var HtmlWysiwygPreview = createClass({
         render: function () {
           return h('div', {
@@ -392,9 +669,9 @@
           });
         },
       });
-
+ 
       CMS.registerWidget('html-wysiwyg', HtmlWysiwygControl, HtmlWysiwygPreview);
-
+ 
       // The preview pane (right side) renders inside its own iframe, so the
       // page-level <style> block above never reaches it - Decap requires
       // registerPreviewStyle() specifically for anything shown there.
@@ -418,10 +695,20 @@
         '  margin: 0 0 0.6rem; padding: 0.4rem 0.9rem;' +
         '  border-left: 3px solid #0046CC; background: #F5F8FF; color: #4E4E4E;' +
         '}' +
-        '.beamo-html-editor-preview img { max-width: 100%; }',
+        '.beamo-html-editor-preview img { max-width: 100%; }' +
+        // Mirrors .article-body table styling from the live site's style.css
+        // (this iframe never loads that file, so it needs its own copy).
+        '.beamo-html-editor-preview table {' +
+        '  width: 100%; border-collapse: collapse; margin: 12px 0 20px; font-size: 0.92em;' +
+        '}' +
+        '.beamo-html-editor-preview th, .beamo-html-editor-preview td {' +
+        '  border: 1px solid #E8E8E8; padding: 9px 11px; text-align: left; vertical-align: top;' +
+        '}' +
+        '.beamo-html-editor-preview thead th { background: #F8F9FB; font-weight: 700; }' +
+        '.beamo-html-editor-preview td[colspan] { background: #E6EEFF; font-weight: 600; }',
         { raw: true },
       );
-
+ 
       // Editor form groups fields by language (한국어/English/日本語) as
       // separate blocks - the default preview (no registered template) walks
       // the same field tree but without that grouping made visually obvious.
@@ -433,7 +720,7 @@
         { code: 'en', label: 'English' },
         { code: 'ja', label: '日本語' },
       ];
-
+ 
       var ArticlePreview = createClass({
         render: function () {
           var entry = this.props.entry;
@@ -458,9 +745,9 @@
           );
         },
       });
-
+ 
       CMS.registerPreviewTemplate('articles', ArticlePreview);
-
+ 
       CMS.registerPreviewStyle(
         '.beamo-lang-section {' +
         '  padding-bottom: 1.4rem; margin-bottom: 1.4rem; border-bottom: 1px solid #E3E9F5;' +
@@ -473,7 +760,7 @@
         '.beamo-lang-section-title { font-size: 1.3rem; font-weight: 800; margin: 0 0 0.6rem; color: #17181A; }',
         { raw: true },
       );
-
+ 
       // Scroll sync between the edit pane and preview pane. Decap has no
       // official API for this - it links the two by their internal class
       // names (same "hashed class, but the display name survives as a
@@ -490,7 +777,7 @@
       (function () {
         var syncing = false;
         var linked = (typeof WeakSet !== 'undefined') ? new WeakSet() : null;
-
+ 
         function ratio(el) {
           var max = el.scrollHeight - el.clientHeight;
           return max > 0 ? el.scrollTop / max : 0;
@@ -517,7 +804,7 @@
           controlPane.addEventListener('scroll', onScroll(controlPane, previewPane));
           previewPane.addEventListener('scroll', onScroll(previewPane, controlPane));
         }
-
+ 
         var scheduled = false;
         function scheduleTryLink() {
           if (scheduled) return;
@@ -527,7 +814,7 @@
             tryLink();
           });
         }
-
+ 
         new MutationObserver(scheduleTryLink).observe(document.body, { childList: true, subtree: true });
         scheduleTryLink();
       })();
@@ -535,3 +822,4 @@
   </script>
 </body>
 </html>
+ 
