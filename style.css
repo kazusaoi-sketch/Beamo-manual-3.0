@@ -34,10 +34,20 @@ body{
 }
 @media (min-width:901px){
   body{
+    /* Fine grain texture. This used to be a regular radial-gradient dot
+       grid (0.6px dots every 18px), but a perfectly regular repeating
+       pattern renders very differently depending on display pixel
+       density: on standard-DPI screens the sub-pixel dots blur into a
+       soft haze, but on Retina/HiDPI screens they resolve into a crisp,
+       distracting dot grid. An SVG fractal-noise filter has no
+       repeating structure to resolve, so it reads as the same subtle
+       grain at any pixel density. stitchTiles=stitch keeps the 180x180
+       tile seamless when repeated.
+    */
     background-image:
-      radial-gradient(rgba(255,255,255,0.35) 0.6px, transparent 0.6px),
+      url("data:image/svg+xml;utf8,<svg xmlns=%27http://www.w3.org/2000/svg%27 width=%27180%27 height=%27180%27><filter id=%27n%27><feTurbulence type=%27fractalNoise%27 baseFrequency=%270.9%27 numOctaves=%272%27 stitchTiles=%27stitch%27 result=%27t%27/><feComponentTransfer in=%27t%27 result=%27sparse%27><feFuncA type=%27gamma%27 amplitude=%271%27 exponent=%276%27 offset=%270%27/></feComponentTransfer><feColorMatrix in=%27sparse%27 type=%27matrix%27 values=%270 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 0.9 0%27/></filter><rect width=%27100%25%27 height=%27100%25%27 filter=%27url(%23n)%27/></svg>"),
       var(--gradient-body-bg);
-    background-size:18px 18px, 100% 2400px;
+    background-size:180px 180px, 100% 2400px;
     background-repeat:repeat, no-repeat;
   }
 }
