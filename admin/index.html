@@ -130,7 +130,7 @@
     }
  
     /* Row/column controls for tables - only enabled while the cursor sits
-       inside a table cell (see HtmlWysiwygControl.state.inTableCell). */
+       inside a table cell (see HtmlWysiwygControl.inTableCell). */
     .beamo-table-toolbar {
       display: flex;
       flex-wrap: wrap;
@@ -247,27 +247,29 @@
  
       var HtmlWysiwygControl = createClass({
         componentDidMount: function () {
+          // Plain instance field, not this.state - this widget's
+          // `createClass` (exposed by decap-cms.js) doesn't run
+          // getInitialState the way the real create-react-class does, so
+          // this.state is never populated and stays undefined forever.
+          // forceUpdate() below re-renders without needing React state.
+          this.inTableCell = false;
           if (this.el) {
             this.el.innerHTML = this.props.value || '';
             fixImagePreviews(this.el);
           }
         },
-        getInitialState: function () {
-          return { inTableCell: false };
-        },
-        shouldComponentUpdate: function (nextProps, nextState) {
+        shouldComponentUpdate: function (nextProps) {
           // This node's content is owned by the browser (contentEditable),
           // not React - letting React re-render it on every keystroke would
-          // reset the cursor to the start each time. The exceptions are
-          // mediaPaths (that's how Decap hands back a picked/uploaded image,
-          // and componentDidUpdate - which only fires when this returns
-          // true - is what we use to notice it) and inTableCell (toggles the
-          // table row/column buttons; safe to re-render for, since that div
-          // has no React children to reconcile - see render() below).
-          return (
-            nextProps.mediaPaths !== this.props.mediaPaths ||
-            nextState.inTableCell !== this.state.inTableCell
-          );
+          // reset the cursor to the start each time. The one exception is
+          // mediaPaths: that's how Decap hands back a picked/uploaded image,
+          // and componentDidUpdate (which only fires when this returns
+          // true) is what we use to notice it. The table toolbar's
+          // inTableCell toggle goes through forceUpdate() instead (see
+          // saveSelection/handleDeleteRow/handleDeleteColumn below), which
+          // skips shouldComponentUpdate entirely, so it doesn't need to be
+          // handled here.
+          return nextProps.mediaPaths !== this.props.mediaPaths;
         },
         componentDidUpdate: function () {
           var mediaPaths = this.props.mediaPaths;
@@ -297,8 +299,9 @@
             this.savedRange = sel.getRangeAt(0).cloneRange();
           }
           var inTableCell = !!this.getCurrentCell();
-          if (inTableCell !== this.state.inTableCell) {
-            this.setState({ inTableCell: inTableCell });
+          if (inTableCell !== this.inTableCell) {
+            this.inTableCell = inTableCell;
+            this.forceUpdate();
           }
         },
         // Walks up from the saved selection to the nearest <td>/<th>, or
@@ -482,7 +485,8 @@
           var nextFocusRow = row.nextElementSibling || row.previousElementSibling;
           section.removeChild(row);
           this.savedRange = null;
-          this.setState({ inTableCell: false });
+          this.inTableCell = false;
+          this.forceUpdate();
           if (nextFocusRow && nextFocusRow.children[0]) {
             this.focusCell(nextFocusRow.children[0]);
           }
@@ -532,7 +536,8 @@
             if (c) tr.removeChild(c);
           });
           this.savedRange = null;
-          this.setState({ inTableCell: false });
+          this.inTableCell = false;
+          this.forceUpdate();
           this.handleInput();
         },
         render: function () {
@@ -578,14 +583,14 @@
               h(
                 'span',
                 { className: 'beamo-table-toolbar-label' },
-                self.state.inTableCell ? '표 편집:' : '표 편집 (표 안에 커서를 두면 켜져요):',
+                self.inTableCell ? '표 편집:' : '표 편집 (표 안에 커서를 두면 켜져요):',
               ),
               h(
                 'button',
                 {
                   type: 'button',
                   className: 'beamo-table-btn',
-                  disabled: !self.state.inTableCell,
+                  disabled: !self.inTableCell,
                   onMouseDown: this.handleTableToolMouseDown,
                   onClick: this.handleInsertRowAbove,
                 },
@@ -596,7 +601,7 @@
                 {
                   type: 'button',
                   className: 'beamo-table-btn',
-                  disabled: !self.state.inTableCell,
+                  disabled: !self.inTableCell,
                   onMouseDown: this.handleTableToolMouseDown,
                   onClick: this.handleInsertRowBelow,
                 },
@@ -607,7 +612,7 @@
                 {
                   type: 'button',
                   className: 'beamo-table-btn',
-                  disabled: !self.state.inTableCell,
+                  disabled: !self.inTableCell,
                   onMouseDown: this.handleTableToolMouseDown,
                   onClick: this.handleDeleteRow,
                 },
@@ -618,7 +623,7 @@
                 {
                   type: 'button',
                   className: 'beamo-table-btn',
-                  disabled: !self.state.inTableCell,
+                  disabled: !self.inTableCell,
                   onMouseDown: this.handleTableToolMouseDown,
                   onClick: this.handleInsertColumnLeft,
                 },
@@ -629,7 +634,7 @@
                 {
                   type: 'button',
                   className: 'beamo-table-btn',
-                  disabled: !self.state.inTableCell,
+                  disabled: !self.inTableCell,
                   onMouseDown: this.handleTableToolMouseDown,
                   onClick: this.handleInsertColumnRight,
                 },
@@ -640,7 +645,7 @@
                 {
                   type: 'button',
                   className: 'beamo-table-btn',
-                  disabled: !self.state.inTableCell,
+                  disabled: !self.inTableCell,
                   onMouseDown: this.handleTableToolMouseDown,
                   onClick: this.handleDeleteColumn,
                 },
