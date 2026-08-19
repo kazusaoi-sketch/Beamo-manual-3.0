@@ -44,8 +44,7 @@ i18n-ui.js는 화면에 쓰이는 UI 텍스트(버튼 이름 등)의 3개 언어
 
 style.css는 디자인을 담당합니다.
 
-admin/config.yml과 admin/index.html은 Decap CMS 편집기의 설정과 화면입니다.
-
+admin/config.yml과 admin/index.html은 Decap CMS 편집기의 설정과 화면입니다. admin/index.html의 본문(html) 필드는 Decap 기본 위지윅이 아니라 직접 만든 html-wysiwyg 위젯으로, 화면에 보이는 그대로 클릭해서 바로 고치는 방식입니다. 표 안 셀에 마우스를 올리면 모서리에 "⋮" 핸들이 뜨고, 클릭하면 행 위/아래 추가·행 삭제·열 왼쪽/오른쪽 추가·열 삭제 메뉴가 나옵니다.
 admin/oauth-worker 폴더는 편집기 깃허브 로그인을 중계하는 Cloudflare Worker 코드입니다.
 
 scripts/build_content.py는 content/articles의 json 파일들을 content-data.js로 재생성하는 스크립트로, 자동 빌드가 사용합니다.
