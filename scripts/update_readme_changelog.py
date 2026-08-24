@@ -4,11 +4,16 @@
 .github/workflows/build-content.yml 의 push 스텝에서 실행되며, BEFORE_SHA /
 AFTER_SHA 환경변수로 지정된 두 커밋 사이에서 content/articles/ 아래 바뀐 파일만을
 대상으로 항목을 만들어 README.md 상단(변경 이력 섹션의 안내문 바로 아래)에 추가합니다.
+
+매번 실행될 때마다 RETENTION_DAYS(기본 365일)보다 오래된 항목은 자동으로
+삭제됩니다 - 문서가 활발히 편집되는 한 이 스크립트도 자주 실행되므로, 별도의
+정기 실행 없이 오래된 항목이 자연스럽게 정리됩니다.
 """
 import json
 import os
+import re
 import subprocess
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 
 README_PATH = "README.md"
 SECTION_HEADING = "## 변경 이력"
@@ -18,6 +23,8 @@ SECTION_INTRO = (
 )
 ARTICLES_DIR = "content/articles"
 ZERO_SHA = "0000000000000000000000000000000000000000"
+RETENTION_DAYS = 365
+ENTRY_DATE_RE = re.compile(r"^- (\d{4}-\d{2}-\d{2}):")
 
 
 def sh(*args):
@@ -64,35 +71,94 @@ def build_entries(changes, before_sha, after_sha):
     return lines
 
 
-def update_readme(entries):
-    if not entries:
-        return False
-    with open(README_PATH, "r", encoding="utf-8") as f:
-        content = f.read()
-
+def _insert_entries(content, entries):
+    """README.md 안에 새 변경 이력 항목들을 끼워 넣은 새 콘텐츠 문자열을 반환합니다."""
     if SECTION_HEADING not in content:
         block = f"\n\n{SECTION_HEADING}\n\n{SECTION_INTRO}\n\n" + "\n".join(entries) + "\n"
-        content = content.rstrip("\n") + block
+        return content.rstrip("\n") + block
+
+    heading_idx = content.index(SECTION_HEADING)
+    head = content[: heading_idx + len(SECTION_HEADING)]
+    tail = content[heading_idx + len(SECTION_HEADING):]
+    tail_lines = tail.split("\n")
+    # 안내문(첫 번째 비어있지 않은 줄) 다음에 오는 첫 번째 빈 줄 바로 뒤에
+    # 새 항목을 끼워 넣습니다 (안내문보다는 아래, 기존 로그 항목보다는 위).
+    intro_idx = next((i for i, line in enumerate(tail_lines) if line.strip()), None)
+    insert_at = len(tail_lines)
+    if intro_idx is not None:
+        for i in range(intro_idx + 1, len(tail_lines)):
+            if tail_lines[i].strip() == "":
+                insert_at = i + 1
+                break
+    new_tail = "\n".join(tail_lines[:insert_at] + entries + tail_lines[insert_at:])
+    return head + new_tail
+
+
+def prune_old_entries(content, today=None, retention_days=RETENTION_DAYS):
+    """변경 이력 섹션에서 retention_days보다 오래된 항목을 지운 콘텐츠와 삭제 개수를 반환합니다.
+
+    안내문(비-항목 줄)이나 변경 이력 섹션 밖의 다른 어떤 내용도 건드리지 않도록,
+    "## 변경 이력" 다음에 오는 다음 최상위 "## " 헤딩(또는 파일 끝) 사이 범위로만
+    검사 대상을 한정합니다.
+    """
+    if SECTION_HEADING not in content:
+        return content, 0
+
+    heading_idx = content.index(SECTION_HEADING)
+    head = content[: heading_idx + len(SECTION_HEADING)]
+    tail = content[heading_idx + len(SECTION_HEADING):]
+
+    next_heading = re.search(r"^## ", tail, re.MULTILINE)
+    if next_heading:
+        section_body = tail[: next_heading.start()]
+        after = tail[next_heading.start():]
     else:
-        heading_idx = content.index(SECTION_HEADING)
-        head = content[: heading_idx + len(SECTION_HEADING)]
-        tail = content[heading_idx + len(SECTION_HEADING):]
-        tail_lines = tail.split("\n")
-        # 안내문(첫 번째 비어있지 않은 줄) 다음에 오는 첫 번째 빈 줄 바로 뒤에
-        # 새 항목을 끼워 넣습니다 (안내문보다는 아래, 기존 로그 항목보다는 위).
-        intro_idx = next((i for i, line in enumerate(tail_lines) if line.strip()), None)
-        insert_at = len(tail_lines)
-        if intro_idx is not None:
-            for i in range(intro_idx + 1, len(tail_lines)):
-                if tail_lines[i].strip() == "":
-                    insert_at = i + 1
-                    break
-        new_tail = "\n".join(tail_lines[:insert_at] + entries + tail_lines[insert_at:])
-        content = head + new_tail
+        section_body = tail
+        after = ""
+
+    cutoff = (today or datetime.now(timezone.utc).astimezone().date()) - timedelta(days=retention_days)
+
+    kept_lines = []
+    removed = 0
+    for line in section_body.split("\n"):
+        m = ENTRY_DATE_RE.match(line)
+        if m:
+            try:
+                entry_date = datetime.strptime(m.group(1), "%Y-%m-%d").date()
+            except ValueError:
+                kept_lines.append(line)
+                continue
+            if entry_date < cutoff:
+                removed += 1
+                continue
+        kept_lines.append(line)
+
+    if removed == 0:
+        return content, 0
+
+    return head + "\n".join(kept_lines) + after, removed
+
+
+def update_readme(entries):
+    """README.md에 새 항목을 추가하고 오래된 항목을 정리합니다.
+
+    (파일이 바뀌었는지, 삭제된 오래된 항목이 몇 개인지) 튜플을 반환합니다.
+    """
+    with open(README_PATH, "r", encoding="utf-8") as f:
+        original = f.read()
+
+    content = original
+    if entries:
+        content = _insert_entries(content, entries)
+
+    content, removed = prune_old_entries(content)
+
+    if content == original:
+        return False, removed
 
     with open(README_PATH, "w", encoding="utf-8") as f:
         f.write(content)
-    return True
+    return True, removed
 
 
 def main():
@@ -105,8 +171,11 @@ def main():
 
     changes = get_changed_articles(before_sha, after_sha)
     entries = build_entries(changes, before_sha, after_sha)
-    changed = update_readme(entries)
-    print(f"changelog entries added: {len(entries)}" if changed else "no-op: no article changes detected")
+    changed, removed = update_readme(entries)
+    if changed:
+        print(f"changelog entries added: {len(entries)}, pruned (older than {RETENTION_DAYS} days): {removed}")
+    else:
+        print("no-op: no article changes and nothing to prune")
 
 
 def _has_parent(ref):
