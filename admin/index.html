@@ -341,6 +341,23 @@
           }
           return null;
         },
+        // Same walk, but matches any tag in a list - used to find the
+        // nearest "phrasing content only" container (<p>/heading), which
+        // HTML5 does not allow a <table> to nest inside. The browser's own
+        // HTML parser enforces that on the next el.innerHTML = value (e.g.
+        // reopening the entry), silently splitting the paragraph and
+        // stranding whatever text came after the table - so table insertion
+        // has to sidestep those containers up front instead of inserting
+        // directly into the caret position like the image/link helpers do.
+        findAncestorTagIn: function (node, tagNames) {
+          var n = node;
+          if (n && n.nodeType === 3) n = n.parentNode;
+          while (n && n !== this.el) {
+            if (n.nodeType === 1 && tagNames.indexOf(n.tagName) !== -1) return n;
+            n = n.parentNode;
+          }
+          return null;
+        },
         // Moves the caret into a cell after a row/column insert or delete,
         // so the user can keep typing right away instead of losing focus.
         focusCell: function (cellEl) {
@@ -412,6 +429,86 @@
             config: this.props.field && this.props.field.get ? this.props.field.get('media_library') : undefined,
             field: this.props.field,
           });
+        },
+        // Inserts a brand-new table at the cursor position, prompting for a
+        // column/row count first. Mirrors insertImageAtSavedRange's
+        // save-range-then-insert approach; the header row uses <thead><th>
+        // and body rows use <tbody><td> so the result is immediately usable
+        // by insertRow/insertColumn/handleDeleteRow/handleDeleteColumn above
+        // (which already branch on THEAD vs TBODY).
+        handleInsertTableMouseDown: function (e) {
+          e.preventDefault();
+          this.saveSelection();
+        },
+        handleInsertTableClick: function () {
+          if (!this.el) return;
+
+          var colsRaw = window.prompt('표의 열(가로) 개수를 입력하세요:', '3');
+          if (colsRaw === null) return;
+          var cols = parseInt(colsRaw, 10);
+          if (!cols || cols < 1) {
+            window.alert('열 개수는 1 이상의 숫자여야 해요.');
+            return;
+          }
+
+          var rowsRaw = window.prompt('표의 행(세로, 헤더 제외) 개수를 입력하세요:', '2');
+          if (rowsRaw === null) return;
+          var rows = parseInt(rowsRaw, 10);
+          if (!rows || rows < 1) {
+            window.alert('행 개수는 1 이상의 숫자여야 해요.');
+            return;
+          }
+
+          var table = document.createElement('table');
+          var thead = document.createElement('thead');
+          var headerRow = document.createElement('tr');
+          for (var c = 0; c < cols; c++) {
+            headerRow.appendChild(document.createElement('th'));
+          }
+          thead.appendChild(headerRow);
+          table.appendChild(thead);
+
+          var tbody = document.createElement('tbody');
+          for (var r = 0; r < rows; r++) {
+            var tr = document.createElement('tr');
+            for (var c2 = 0; c2 < cols; c2++) {
+              tr.appendChild(document.createElement('td'));
+            }
+            tbody.appendChild(tr);
+          }
+          table.appendChild(tbody);
+
+          this.el.focus();
+          if (this.savedRange && this.el.contains(this.savedRange.startContainer)) {
+            // If the cursor is already inside another table, drop the new
+            // one right after that table instead of nesting it inside a
+            // cell - nested tables would be legal HTML but a confusing
+            // result for a click that was meant to add a separate table.
+            var ancestorTable = this.findAncestorTag(this.savedRange.startContainer, 'TABLE');
+            // Otherwise, if the cursor is inside a <p> or heading, insert
+            // after that element rather than at the caret - see
+            // findAncestorTagIn's comment for why inserting a table inside
+            // one of these corrupts the content on next load.
+            var phrasingBlock = !ancestorTable
+              ? this.findAncestorTagIn(this.savedRange.startContainer, ['P', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6'])
+              : null;
+            if (ancestorTable && ancestorTable.parentNode) {
+              ancestorTable.parentNode.insertBefore(table, ancestorTable.nextSibling);
+            } else if (phrasingBlock && phrasingBlock.parentNode) {
+              phrasingBlock.parentNode.insertBefore(table, phrasingBlock.nextSibling);
+            } else {
+              var sel = window.getSelection();
+              sel.removeAllRanges();
+              sel.addRange(this.savedRange);
+              this.savedRange.deleteContents();
+              this.savedRange.insertNode(table);
+            }
+          } else {
+            this.el.appendChild(table);
+          }
+
+          this.focusCell(headerRow.children[0]);
+          this.handleInput();
         },
         handleInsertLinkMouseDown: function (e) {
           e.preventDefault();
@@ -678,6 +775,17 @@
               },
               '📄 문서 링크',
             ),
+            h(
+              'button',
+              {
+                type: 'button',
+                className: 'beamo-insert-image-btn',
+                style: { marginLeft: '6px' },
+                onMouseDown: this.handleInsertTableMouseDown,
+                onClick: this.handleInsertTableClick,
+              },
+              '▦ 표 삽입',
+            ),
             h('div', {
               id: this.props.forID,
               className: (this.props.classNameWrapper || '') + ' beamo-html-editor',
@@ -882,4 +990,3 @@
   </script>
 </body>
 </html>
- 
