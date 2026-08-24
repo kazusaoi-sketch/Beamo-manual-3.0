@@ -446,16 +446,22 @@
           var colsRaw = window.prompt('표의 열(가로) 개수를 입력하세요:', '3');
           if (colsRaw === null) return;
           var cols = parseInt(colsRaw, 10);
-          if (!cols || cols < 1) {
-            window.alert('열 개수는 1 이상의 숫자여야 해요.');
+                  if (colsRaw === null) return;
+          var cols = parseInt(colsRaw, 10);
+          // Upper bound is a safety net against a mistyped huge number (e.g.
+          // "300") rather than a real design limit - that many cells can
+          // freeze the contentEditable box, so it's cheaper to reject up
+          // front than to let someone accidentally build an unusable table.
+          if (!cols || cols < 1 || cols > 20) {
+            window.alert('열 개수는 1~20 사이의 숫자여야 해요.');
             return;
           }
 
           var rowsRaw = window.prompt('표의 행(세로, 헤더 제외) 개수를 입력하세요:', '2');
           if (rowsRaw === null) return;
           var rows = parseInt(rowsRaw, 10);
-          if (!rows || rows < 1) {
-            window.alert('행 개수는 1 이상의 숫자여야 해요.');
+          if (!rows || rows < 1 || rows > 50) {
+            window.alert('행 개수는 1~50 사이의 숫자여야 해요.');
             return;
           }
 
@@ -784,8 +790,7 @@
                 onMouseDown: this.handleInsertTableMouseDown,
                 onClick: this.handleInsertTableClick,
               },
-              '▦ 표 삽입',
-            ),
+              '📊 표 삽입',
             h('div', {
               id: this.props.forID,
               className: (this.props.classNameWrapper || '') + ' beamo-html-editor',
