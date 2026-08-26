@@ -13,21 +13,70 @@ on:
         required: true
         type: string
       feature:
-        description: "카테고리 (getting-started / survey / 3d-workspace / admin / appendix / whats-new) — 신규 문서일 때만 필요"
+        description: "카테고리 — 신규 문서일 때만 필요 (기존 문서면 비워두기)"
         required: false
-        type: string
+        type: choice
+        options:
+          - ""
+          - getting-started
+          - survey
+          - 3d-workspace
+          - admin
+          - appendix
+          - whats-new
       version:
-        description: "버전 (3.0 또는 2.0) — 신규 문서일 때만 필요"
+        description: "버전 — 신규 문서일 때만 필요 (기존 문서면 비워두기)"
         required: false
-        type: string
-      platform:
-        description: "플랫폼, 쉼표로 구분 (예: web,aos) — 신규 문서일 때만 필요"
+        type: choice
+        options:
+          - ""
+          - "3.0"
+          - "2.0"
+      platform_web:
+        description: "플랫폼: web — 신규 문서일 때만 필요"
         required: false
-        type: string
-      user:
-        description: "대상 사용자, 쉼표로 구분 (예: all,surveyor) — 신규 문서일 때만 필요"
+        type: boolean
+        default: false
+      platform_aos:
+        description: "플랫폼: aos — 신규 문서일 때만 필요"
         required: false
-        type: string
+        type: boolean
+        default: false
+      platform_ios:
+        description: "플랫폼: ios — 신규 문서일 때만 필요"
+        required: false
+        type: boolean
+        default: false
+      user_all:
+        description: "대상 사용자: all — 신규 문서일 때만 필요"
+        required: false
+        type: boolean
+        default: false
+      user_surveyor:
+        description: "대상 사용자: surveyor — 신규 문서일 때만 필요"
+        required: false
+        type: boolean
+        default: false
+      user_team_admin:
+        description: "대상 사용자: team-admin — 신규 문서일 때만 필요"
+        required: false
+        type: boolean
+        default: false
+      user_collaborator:
+        description: "대상 사용자: collaborator — 신규 문서일 때만 필요"
+        required: false
+        type: boolean
+        default: false
+      user_site_manager:
+        description: "대상 사용자: site-manager — 신규 문서일 때만 필요"
+        required: false
+        type: boolean
+        default: false
+      user_super_admin:
+        description: "대상 사용자: super-admin — 신규 문서일 때만 필요"
+        required: false
+        type: boolean
+        default: false
       step:
         description: "스텝(챕터) 번호 — 신규 문서일 때만 필요"
         required: false
@@ -65,7 +114,6 @@ jobs:
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
-
       - name: Run translation pipeline
         env:
           CONF_EMAIL: ${{ secrets.CONF_EMAIL }}
@@ -75,10 +123,26 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           cd sync-tools
+
+          PLATFORMS=()
+          [ "${{ github.event.inputs.platform_web }}" = "true" ] && PLATFORMS+=("web")
+          [ "${{ github.event.inputs.platform_aos }}" = "true" ] && PLATFORMS+=("aos")
+          [ "${{ github.event.inputs.platform_ios }}" = "true" ] && PLATFORMS+=("ios")
+          PLATFORM_STR=$(IFS=,; echo "${PLATFORMS[*]}")
+
+          USERS=()
+          [ "${{ github.event.inputs.user_all }}" = "true" ] && USERS+=("all")
+          [ "${{ github.event.inputs.user_surveyor }}" = "true" ] && USERS+=("surveyor")
+          [ "${{ github.event.inputs.user_team_admin }}" = "true" ] && USERS+=("team-admin")
+          [ "${{ github.event.inputs.user_collaborator }}" = "true" ] && USERS+=("collaborator")
+          [ "${{ github.event.inputs.user_site_manager }}" = "true" ] && USERS+=("site-manager")
+          [ "${{ github.event.inputs.user_super_admin }}" = "true" ] && USERS+=("super-admin")
+          USER_STR=$(IFS=,; echo "${USERS[*]}")
+
           ARGS=("${{ github.event.inputs.confluence_url }}")
-          [ -n "${{ github.event.inputs.feature }}" ]  && ARGS+=(--feature  "${{ github.event.inputs.feature }}")
-          [ -n "${{ github.event.inputs.version }}" ]  && ARGS+=(--version  "${{ github.event.inputs.version }}")
-          [ -n "${{ github.event.inputs.platform }}" ] && ARGS+=(--platform "${{ github.event.inputs.platform }}")
-          [ -n "${{ github.event.inputs.user }}" ]     && ARGS+=(--user     "${{ github.event.inputs.user }}")
-          [ -n "${{ github.event.inputs.step }}" ]     && ARGS+=(--step     "${{ github.event.inputs.step }}")
+          [ -n "${{ github.event.inputs.feature }}" ] && ARGS+=(--feature "${{ github.event.inputs.feature }}")
+          [ -n "${{ github.event.inputs.version }}" ] && ARGS+=(--version "${{ github.event.inputs.version }}")
+          [ -n "$PLATFORM_STR" ] && ARGS+=(--platform "$PLATFORM_STR")
+          [ -n "$USER_STR" ] && ARGS+=(--user "$USER_STR")
+          [ -n "${{ github.event.inputs.step }}" ] && ARGS+=(--step "${{ github.event.inputs.step }}")
           python3 publish_to_site.py "${ARGS[@]}"
