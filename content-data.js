@@ -843,15 +843,15 @@ const ARTICLES = [
     "i18n": {
       "en": {
         "title": "Manual Video",
-        "html": "<p>Link to the video guide that walks through Beamo 3.0 at a glance.</p>\n<p><a href=\"https://youtu.be/baEUoNLjlsY\">https://youtu.be/baEUoNLjlsY</a><br></p>"
+        "html": "<p>Link to the video guide that walks through Beamo 3.0 at a glance.</p>\n<div style=\"position:relative;padding-top:56.25%;height:0;overflow:hidden;border-radius:12px;margin:16px 0;\"><iframe src=\"https://www.youtube.com/embed/baEUoNLjlsY\" title=\"Beamo 3.0 Manual Video\" style=\"position:absolute;top:0;left:0;width:100%;height:100%;border:0;\" allow=\"accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share\" allowfullscreen></iframe></div>\n<p><a href=\"https://youtu.be/baEUoNLjlsY\" target=\"_blank\" rel=\"noopener\">Watch on YouTube ↗</a></p>"
       },
       "ko": {
         "title": "매뉴얼 영상",
-        "html": "<p>Beamo 3.0 사용법을 빠르게 확인할 수 있는 영상 가이드:&nbsp;</p><p><a href=\"https://youtu.be/baEUoNLjlsY\">https://youtu.be/baEUoNLjlsY</a></p>"
+        "html": "<p>Beamo 3.0 사용법을 빠르게 확인할 수 있는 영상 가이드:&nbsp;</p><div style=\"position:relative;padding-top:56.25%;height:0;overflow:hidden;border-radius:12px;margin:16px 0;\"><iframe src=\"https://www.youtube.com/embed/baEUoNLjlsY\" title=\"Beamo 3.0 매뉴얼 영상\" style=\"position:absolute;top:0;left:0;width:100%;height:100%;border:0;\" allow=\"accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share\" allowfullscreen></iframe></div><p><a href=\"https://youtu.be/baEUoNLjlsY\" target=\"_blank\" rel=\"noopener\">YouTube에서 보기 ↗</a></p>"
       },
       "ja": {
         "title": "マニュアル動画",
-        "html": "<p>Beamo 3.0の使い方をすぐに確認できる動画ガイドをご覧ください。</p><p><a href=\"https://youtu.be/baEUoNLjlsY\">https://youtu.be/baEUoNLjlsY</a><br></p>"
+        "html": "<p>Beamo 3.0の使い方をすぐに確認できる動画ガイドをご覧ください。</p><div style=\"position:relative;padding-top:56.25%;height:0;overflow:hidden;border-radius:12px;margin:16px 0;\"><iframe src=\"https://www.youtube.com/embed/baEUoNLjlsY\" title=\"Beamo 3.0 マニュアル動画\" style=\"position:absolute;top:0;left:0;width:100%;height:100%;border:0;\" allow=\"accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share\" allowfullscreen></iframe></div><p><a href=\"https://youtu.be/baEUoNLjlsY\" target=\"_blank\" rel=\"noopener\">YouTubeで見る ↗</a></p>"
       }
     }
   }
