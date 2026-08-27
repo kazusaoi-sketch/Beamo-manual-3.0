@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>Beamo Manual Center — Plans &amp; Pricing</title>
+<link rel="icon" type="image/png" href="beamo-mark-blue.png" />
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<div class="page-blob-3" aria-hidden="true"></div>
+<div class="page-blob-4" aria-hidden="true"></div>
+<div class="page-blob-5" aria-hidden="true"></div>
+
+<header>
+  <a class="logo" id="logo-home" href="index.html">
+    <img src="beamo-mark-white.png" alt="Beamo" class="logo-mark" />
+    <div class="logo-text" id="site-name">Beamo <span>매뉴얼</span></div>
+  </a>
+  <div class="header-right">
+    <a href="index.html" class="portal-btn" id="back-btn">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor"><path d="M12.5 4.5 6 10l6.5 5.5" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span id="back-btn-label">매뉴얼로 돌아가기</span>
+    </a>
+    <div class="lang-switch">
+      <button data-lang="ko" class="active">한국어</button>
+      <button data-lang="en">English</button>
+      <button data-lang="ja">日本語</button>
+    </div>
+  </div>
+</header>
+
+<section class="plans-hero">
+  <div class="hero-label" id="hero-label">PLANS &amp; PRICING</div>
+  <h1 id="hero-title">플랜 및 요금제</h1>
+  <p id="hero-subtitle">사이트 규모와 촬영 볼륨에 맞는 플랜을 선택하세요. 모든 플랜은 동일한 기능을 제공합니다.</p>
+  <div class="plans-notice" id="plans-notice"></div>
+</section>
+
+<section class="plans-section">
+  <div class="plans-grid" id="plans-grid"></div>
+</section>
+
+<footer>
+  <img src="beamo-mark-white.png" alt="Beamo" class="footer-logo" />
+  <div class="footer-links" id="footer-links"></div>
+  <div class="footer-social" id="footer-social"></div>
+  <div class="footer-copy" id="footer-copy"></div>
+</footer>
+
+<script src="i18n-ui.js"></script>
+<script>
+/* Plans & Pricing page — self-contained i18n (does not load app.js).
+   All prices/features below are PLACEHOLDER copy pending confirmed pricing. */
+const PLANS_UI = {
+  ko: {
+    backBtn: "매뉴얼로 돌아가기",
+    heroLabel: "PLANS & PRICING",
+    heroTitle: "플랜 및 요금제",
+    heroSubtitle: "사이트 규모와 촬영 볼륨에 맞는 플랜을 선택하세요. 모든 플랜은 동일한 기능을 제공합니다.",
+    notice: "이 페이지의 플랜 구성 및 가격 정보는 준비 중인 자리표시자(placeholder)입니다. 확정된 내용이 아니며, 정확한 견적은 담당 영업팀에 문의해 주세요.",
+    ctaBtn: "영업팀에 문의하기",
+    tiers: [
+      { name: "Tier 1 · Standard", tag: "", price: "가격 문의", priceNote: "월 구독 · 연간 포인트 풀 제공", features: ["핵심 기능 전체 제공", "기본 캡처 볼륨", "이메일 지원"] },
+      { name: "Tier 2 · Pro", tag: "가장 많이 선택", price: "가격 문의", priceNote: "월 구독 · 연간 포인트 풀 제공", features: ["핵심 기능 전체 제공", "확장된 캡처 볼륨", "우선 지원"] },
+      { name: "Tier 3 · Enterprise", tag: "", price: "가격 문의", priceNote: "월 구독 · 연간 포인트 풀 제공", features: ["핵심 기능 전체 제공", "대규모 캡처 볼륨", "전담 매니저 지원"] }
+    ]
+  },
+  en: {
+    backBtn: "Back to Manual",
+    heroLabel: "PLANS & PRICING",
+    heroTitle: "Plans & Pricing",
+    heroSubtitle: "Choose the plan that fits your site size and capture volume. All plans include the same feature set.",
+    notice: "The plan structure and pricing on this page are placeholder copy pending confirmation. For an accurate quote, please contact our sales team.",
+    ctaBtn: "Contact Sales",
+    tiers: [
+      { name: "Tier 1 · Standard", tag: "", price: "Contact us", priceNote: "Monthly subscription · Annual point pool included", features: ["Full feature set", "Standard capture volume", "Email support"] },
+      { name: "Tier 2 · Pro", tag: "Most popular", price: "Contact us", priceNote: "Monthly subscription · Annual point pool included", features: ["Full feature set", "Expanded capture volume", "Priority support"] },
+      { name: "Tier 3 · Enterprise", tag: "", price: "Contact us", priceNote: "Monthly subscription · Annual point pool included", features: ["Full feature set", "Large-scale capture volume", "Dedicated account manager"] }
+    ]
+  },
+  ja: {
+    backBtn: "マニュアルに戻る",
+    heroLabel: "PLANS & PRICING",
+    heroTitle: "料金プラン",
+    heroSubtitle: "現場の規模と撮影ボリュームに合わせてプランをお選びください。全てのプランで同じ機能をご利用いただけます。",
+    notice: "このページのプラン構成および価格情報は準備中の仮の内容（プレースホルダー）です。確定情報ではありませんので、正確なお見積りは営業担当までお問い合わせください。",
+    ctaBtn: "営業担当に問い合わせる",
+    tiers: [
+      { name: "Tier 1 · Standard", tag: "", price: "お問い合わせください", priceNote: "月額サブスクリプション・年間ポイントプール付き", features: ["主要機能をすべて提供", "標準の撮影ボリューム", "メールサポート"] },
+      { name: "Tier 2 · Pro", tag: "人気プラン", price: "お問い合わせください", priceNote: "月額サブスクリプション・年間ポイントプール付き", features: ["主要機能をすべて提供", "拡張された撮影ボリューム", "優先サポート"] },
+      { name: "Tier 3 · Enterprise", tag: "", price: "お問い合わせください", priceNote: "月額サブスクリプション・年間ポイントプール付き", features: ["主要機能をすべて提供", "大規模な撮影ボリューム", "専任アカウントマネージャー"] }
+    ]
+  }
+};
+
+const SOCIAL_ICON_SVG = {
+  LinkedIn: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M4.98 3.5C4.98 4.88 3.87 6 2.5 6S0 4.88 0 3.5 1.12 1 2.5 1s2.48 1.12 2.48 2.5zM.5 8.5h4V23h-4V8.5zM8.5 8.5h3.83v2h.05c.53-1 1.84-2.05 3.78-2.05 4.04 0 4.79 2.66 4.79 6.11V23h-4v-6.9c0-1.64-.03-3.76-2.29-3.76-2.29 0-2.64 1.79-2.64 3.64V23h-4V8.5z"/></svg>',
+  YouTube: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.4.6A3 3 0 0 0 .5 6.2 31 31 0 0 0 0 12a31 31 0 0 0 .5 5.8 3 3 0 0 0 2.1 2.1c1.9.6 9.4.6 9.4.6s7.5 0 9.4-.6a3 3 0 0 0 2.1-2.1A31 31 0 0 0 24 12a31 31 0 0 0-.5-5.8zM9.6 15.5v-7l6.4 3.5-6.4 3.5z"/></svg>',
+  Instagram: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2.5" y="2.5" width="19" height="19" rx="5"/><circle cx="12" cy="12" r="4.2"/><circle cx="17.6" cy="6.4" r="1" fill="currentColor" stroke="none"/></svg>',
+  Facebook: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M15.12 8.5H17V5.14C16.67 5.1 15.55 5 14.24 5c-2.73 0-4.6 1.66-4.6 4.7V12H6.6v3.5h3.04V23h3.62v-7.5h3.04L17 12h-3.74v-1.94c0-1 .27-1.56 1.86-1.56z"/></svg>',
+  X: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M13.9 10.5 21.3 2h-1.8l-6.4 7.4L8 2H2l7.8 11.3L2 22h1.8l6.8-7.9L16 22h6L13.9 10.5zm-2.4 2.8-.8-1.1L4.4 3.3h2.7l5 7.2.8 1.1 6.6 9.4h-2.7l-5.3-7.7z"/></svg>'
+};
+const BEAMO_HOME_URL = "https://www.beamo.ai/";
+const ABOUT_US_URL = "https://3i.ai/";
+
+function escapeHtml(s) {
+  return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
+function getLang() {
+  const params = new URLSearchParams(window.location.search);
+  const lang = params.get("lang");
+  return (lang && PLANS_UI[lang]) ? lang : "ko";
+}
+
+let currentLang = getLang();
+
+function renderPlansPage() {
+  const p = PLANS_UI[currentLang];
+  const ui = UI[currentLang];
+
+  document.getElementById("site-name").innerHTML =
+    currentLang === "ko" ? `Beamo <span>매뉴얼</span>` :
+    currentLang === "ja" ? `Beamo <span>マニュアル</span>` :
+    `Beamo <span>Manual</span>`;
+  document.getElementById("back-btn-label").textContent = p.backBtn;
+  document.getElementById("back-btn").href = `index.html?lang=${currentLang}`;
+  document.getElementById("hero-label").textContent = p.heroLabel;
+  document.getElementById("hero-title").textContent = p.heroTitle;
+  document.getElementById("hero-subtitle").textContent = p.heroSubtitle;
+  document.getElementById("plans-notice").textContent = `※ ${p.notice}`;
+
+  const contactUrl = CONTACT_URL[currentLang] || CONTACT_URL.en;
+  document.getElementById("plans-grid").innerHTML = p.tiers.map((tier, i) => `
+    <div class="plan-card${i === 1 ? " featured" : ""}"${tier.tag ? ` data-tag="${escapeHtml(tier.tag)}"` : ""}>
+      <div class="plan-name">${escapeHtml(tier.name)}</div>
+      <div class="plan-price">${escapeHtml(tier.price)}<span class="plan-price-note">${escapeHtml(tier.priceNote)}</span></div>
+      <ul class="plan-features">
+        ${tier.features.map(f => `<li>${escapeHtml(f)}</li>`).join("")}
+      </ul>
+      <a class="plan-cta" href="${contactUrl}" target="_blank" rel="noopener">${escapeHtml(p.ctaBtn)}</a>
+    </div>
+  `).join("");
+
+  const BEAMO_HOME_INDEX = 0, ABOUT_US_INDEX = 1, CONTACT_INDEX = 2;
+  document.getElementById("footer-links").innerHTML = ui.footerLinks.map((l, i) => {
+    if (i === BEAMO_HOME_INDEX) return `<a href="${BEAMO_HOME_URL}" target="_blank" rel="noopener">${escapeHtml(l)}</a>`;
+    if (i === ABOUT_US_INDEX) return `<a href="${ABOUT_US_URL}" target="_blank" rel="noopener">${escapeHtml(l)}</a>`;
+    if (i === CONTACT_INDEX) return `<a href="${contactUrl}" target="_blank" rel="noopener">${escapeHtml(l)}</a>`;
+    return `<span>${escapeHtml(l)}</span>`;
+  }).join("");
+  document.getElementById("footer-social").innerHTML = SOCIAL_LINKS.map(s =>
+    `<a href="${s.url}" target="_blank" rel="noopener" aria-label="${escapeHtml(s.name)}" class="social-link">${SOCIAL_ICON_SVG[s.name]}</a>`
+  ).join("");
+  document.getElementById("footer-copy").textContent = ui.footerCopy;
+
+  document.querySelectorAll(".lang-switch button").forEach(btn => {
+    btn.classList.toggle("active", btn.dataset.lang === currentLang);
+  });
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  renderPlansPage();
+  document.querySelectorAll(".lang-switch button").forEach(btn => {
+    btn.addEventListener("click", () => {
+      currentLang = btn.dataset.lang;
+      const url = new URL(window.location.href);
+      url.searchParams.set("lang", currentLang);
+      window.history.replaceState({}, "", url.toString());
+      renderPlansPage();
+    });
+  });
+});
+</script>
+</body>
+</html>
