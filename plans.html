@@ -52,8 +52,9 @@
 <script src="i18n-ui.js"></script>
 <script>
 /* Plans & Pricing page — self-contained i18n (does not load app.js).
-   All prices/features below are PLACEHOLDER copy pending confirmed pricing. */
-const PLANS_UI = {
+   Content is editable via the /admin/ CMS (content/pages/plans.json).
+   FALLBACK_PLANS_UI below is only used if that fetch fails. */
+const FALLBACK_PLANS_UI = {
   ko: {
     backBtn: "매뉴얼로 돌아가기",
     heroLabel: "PLANS & PRICING",
@@ -94,6 +95,20 @@ const PLANS_UI = {
     ]
   }
 };
+let PLANS_UI = null;
+
+async function loadPlansUi() {
+  try {
+    const res = await fetch("content/pages/plans.json", { cache: "no-store" });
+    if (!res.ok) throw new Error("bad status " + res.status);
+    const data = await res.json();
+    if (!data || !data.i18n || !data.i18n.ko) throw new Error("malformed plans.json");
+    return data.i18n;
+  } catch (e) {
+    console.warn("plans.html: failed to load content/pages/plans.json, using fallback content.", e);
+    return FALLBACK_PLANS_UI;
+  }
+}
 
 const SOCIAL_ICON_SVG = {
   LinkedIn: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M4.98 3.5C4.98 4.88 3.87 6 2.5 6S0 4.88 0 3.5 1.12 1 2.5 1s2.48 1.12 2.48 2.5zM.5 8.5h4V23h-4V8.5zM8.5 8.5h3.83v2h.05c.53-1 1.84-2.05 3.78-2.05 4.04 0 4.79 2.66 4.79 6.11V23h-4v-6.9c0-1.64-.03-3.76-2.29-3.76-2.29 0-2.64 1.79-2.64 3.64V23h-4V8.5z"/></svg>',
@@ -115,7 +130,7 @@ function getLang() {
   return (lang && PLANS_UI[lang]) ? lang : "ko";
 }
 
-let currentLang = getLang();
+let currentLang = "ko";
 
 function renderPlansPage() {
   const p = PLANS_UI[currentLang];
@@ -133,12 +148,12 @@ function renderPlansPage() {
   document.getElementById("plans-notice").textContent = `※ ${p.notice}`;
 
   const contactUrl = CONTACT_URL[currentLang] || CONTACT_URL.en;
-  document.getElementById("plans-grid").innerHTML = p.tiers.map((tier, i) => `
-    <div class="plan-card${i === 1 ? " featured" : ""}"${tier.tag ? ` data-tag="${escapeHtml(tier.tag)}"` : ""}>
+  document.getElementById("plans-grid").innerHTML = p.tiers.map((tier) => `
+    <div class="plan-card${tier.tag ? " featured" : ""}"${tier.tag ? ` data-tag="${escapeHtml(tier.tag)}"` : ""}>
       <div class="plan-name">${escapeHtml(tier.name)}</div>
       <div class="plan-price">${escapeHtml(tier.price)}<span class="plan-price-note">${escapeHtml(tier.priceNote)}</span></div>
       <ul class="plan-features">
-        ${tier.features.map(f => `<li>${escapeHtml(f)}</li>`).join("")}
+        ${(tier.features || []).map(f => `<li>${escapeHtml(f)}</li>`).join("")}
       </ul>
       <a class="plan-cta" href="${contactUrl}" target="_blank" rel="noopener">${escapeHtml(p.ctaBtn)}</a>
     </div>
@@ -161,7 +176,9 @@ function renderPlansPage() {
   });
 }
 
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
+  PLANS_UI = await loadPlansUi();
+  currentLang = getLang();
   renderPlansPage();
   document.querySelectorAll(".lang-switch button").forEach(btn => {
     btn.addEventListener("click", () => {
