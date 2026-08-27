@@ -8,9 +8,46 @@
       "notice": "이 페이지의 플랜 구성 및 가격 정보는 준비 중인 자리표시자(placeholder)입니다. 확정된 내용이 아니며, 정확한 견적은 담당 영업팀에 문의해 주세요.",
       "ctaBtn": "영업팀에 문의하기",
       "tiers": [
-        { "name": "Tier 1 · Standard", "tag": "", "price": "가격 문의", "priceNote": "월 구독 · 연간 포인트 풀 제공", "features": ["핵심 기능 전체 제공", "기본 캡처 볼륨", "이메일 지원"] },
-        { "name": "Tier 2 · Pro", "tag": "가장 많이 선택", "price": "가격 문의", "priceNote": "월 구독 · 연간 포인트 풀 제공", "features": ["핵심 기능 전체 제공", "확장된 캡처 볼륨", "우선 지원"] },
-        { "name": "Tier 3 · Enterprise", "tag": "", "price": "가격 문의", "priceNote": "월 구독 · 연간 포인트 풀 제공", "features": ["핵심 기능 전체 제공", "대규모 캡처 볼륨", "전담 매니저 지원"] }
+        {
+          "name": "Essential",
+          "tag": "",
+          "price": "가격 문의",
+          "priceNote": "월 구독 · 연간 포인트 풀 제공",
+          "features": [
+            "핵심 기능 부분 제공",
+            "기본 캡처 볼륨",
+            "이메일 지원"
+          ]
+        },
+        {
+          "name": "Pro",
+          "tag": "인기",
+          "price": "가격 문의",
+          "priceNote": "월 구독 · 연간 포인트 풀 제공",
+          "features": [
+            "핵심 기능 전체 제공",
+            "확장된 캡처 볼륨",
+            "우선 지원"
+          ]
+        },
+        {
+          "name": "Enterprise",
+          "tag": "",
+          "price": "가격 문의",
+          "priceNote": "월 구독 · 연간 포인트 풀 제공",
+          "features": [
+            "핵심 기능 전체 제공",
+            "대규모 캡처 볼륨",
+            "전담 매니저 지원"
+          ]
+        },
+        {
+          "name": "기존 고객사 전용요금제 ",
+          "price": "내부조정 후 책정 ",
+          "features": [
+            "전담부서지원"
+          ]
+        }
       ]
     },
     "en": {
@@ -21,9 +58,39 @@
       "notice": "The plan structure and pricing on this page are placeholder copy pending confirmation. For an accurate quote, please contact our sales team.",
       "ctaBtn": "Contact Sales",
       "tiers": [
-        { "name": "Tier 1 · Standard", "tag": "", "price": "Contact us", "priceNote": "Monthly subscription · Annual point pool included", "features": ["Full feature set", "Standard capture volume", "Email support"] },
-        { "name": "Tier 2 · Pro", "tag": "Most popular", "price": "Contact us", "priceNote": "Monthly subscription · Annual point pool included", "features": ["Full feature set", "Expanded capture volume", "Priority support"] },
-        { "name": "Tier 3 · Enterprise", "tag": "", "price": "Contact us", "priceNote": "Monthly subscription · Annual point pool included", "features": ["Full feature set", "Large-scale capture volume", "Dedicated account manager"] }
+        {
+          "name": "Essential",
+          "tag": "",
+          "price": "Contact us",
+          "priceNote": "Monthly subscription · Annual point pool included",
+          "features": [
+            "Full feature set",
+            "Standard capture volume",
+            "Email support"
+          ]
+        },
+        {
+          "name": "Pro",
+          "tag": "Most popular",
+          "price": "Contact us",
+          "priceNote": "Monthly subscription · Annual point pool included",
+          "features": [
+            "Full feature set",
+            "Expanded capture volume",
+            "Priority support"
+          ]
+        },
+        {
+          "name": "Enterprise",
+          "tag": "",
+          "price": "Contact us",
+          "priceNote": "Monthly subscription · Annual point pool included",
+          "features": [
+            "Full feature set",
+            "Large-scale capture volume",
+            "Dedicated account manager"
+          ]
+        }
       ]
     },
     "ja": {
@@ -34,9 +101,38 @@
       "notice": "このページのプラン構成および価格情報は準備中の仮の内容（プレースホルダー）です。確定情報ではありませんので、正確なお見積りは営業担当までお問い合わせください。",
       "ctaBtn": "営業担当に問い合わせる",
       "tiers": [
-        { "name": "Tier 1 · Standard", "tag": "", "price": "お問い合わせください", "priceNote": "月額サブスクリプション・年間ポイントプール付き", "features": ["主要機能をすべて提供", "標準の撮影ボリューム", "メールサポート"] },
-        { "name": "Tier 2 · Pro", "tag": "人気プラン", "price": "お問い合わせください", "priceNote": "月額サブスクリプション・年間ポイントプール付き", "features": ["主要機能をすべて提供", "拡張された撮影ボリューム", "優先サポート"] },
-        { "name": "Tier 3 · Enterprise", "tag": "", "price": "お問い合わせください", "priceNote": "月額サブスクリプション・年間ポイントプール付き", "features": ["主要機能をすべて提供", "大規模な撮影ボリューム", "専任アカウントマネージャー"] }
+        {
+          "name": "Essential",
+          "price": "お問い合わせください",
+          "priceNote": "月額サブスクリプション・年間ポイントプール付き",
+          "features": [
+            "主要機能を部分提供",
+            "拡張された撮影ボリューム",
+            "メールサポート"
+          ]
+        },
+        {
+          "name": "Pro",
+          "tag": "人気プラン",
+          "price": "お問い合わせください",
+          "priceNote": "月額サブスクリプション・年間ポイントプール付き",
+          "features": [
+            "主要機能をすべて提供",
+            "拡張された撮影ボリューム",
+            "優先サポート"
+          ]
+        },
+        {
+          "name": "Enterprise",
+          "tag": "",
+          "price": "お問い合わせください",
+          "priceNote": "月額サブスクリプション・年間ポイントプール付き",
+          "features": [
+            "主要機能をすべて提供",
+            "大規模な撮影ボリューム",
+            "専任アカウントマネージャー"
+          ]
+        }
       ]
     }
   }
