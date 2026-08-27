@@ -116,8 +116,6 @@ header.scrolled{
 }
 .portal-btn svg{width:15px;height:15px;stroke:currentColor;fill:none;flex-shrink:0;}
 .portal-btn:hover{background:#fff;color:var(--primary);border-color:transparent;}
-.plans-btn{background:#fff;color:var(--primary);border-color:transparent;}
-.plans-btn:hover{background:var(--primary-light);color:var(--primary);}
 .lang-switch{display:flex;gap:4px;border:1.5px solid rgba(255,255,255,0.28);border-radius:18px;padding:3px;}
 .lang-switch button{
   font-size:12px;font-weight:600;padding:6px 12px;border-radius:14px;color:rgba(255,255,255,0.75);
