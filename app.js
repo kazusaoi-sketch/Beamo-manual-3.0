@@ -265,6 +265,10 @@ function renderHeader() {
       ? `Beamo <span>マニュアル</span>`
       : `Beamo <span>Manual</span>`;
   document.getElementById("portal-btn-label").textContent = t().portalBtn;
+  const plansLabelEl = document.getElementById("plans-btn-label");
+  if (plansLabelEl) plansLabelEl.textContent = t().plansBtn;
+  const plansBtnEl = document.getElementById("plans-btn");
+  if (plansBtnEl) plansBtnEl.href = `plans.html?lang=${state.lang}`;
   document.querySelectorAll(".lang-switch button").forEach(btn => {
     btn.classList.toggle("active", btn.dataset.lang === state.lang);
   });
