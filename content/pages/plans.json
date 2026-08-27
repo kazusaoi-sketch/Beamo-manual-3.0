@@ -54,7 +54,7 @@
         {
           "name": "Essential",
           "tag": "",
-          "price": "Contact us",
+          "price": "Capturing, viewing, and archiving your digital twins.",
           "priceNote": "Monthly subscription · Annual point pool included",
           "features": [
             "Full feature set",
@@ -65,7 +65,7 @@
         {
           "name": "Pro",
           "tag": "Most popular",
-          "price": "Contact us",
+          "price": "For SMB",
           "priceNote": "Monthly subscription · Annual point pool included",
           "features": [
             "Full feature set",
@@ -76,7 +76,7 @@
         {
           "name": "Enterprise",
           "tag": "",
-          "price": "Contact us",
+          "price": "For Enterprise",
           "priceNote": "Monthly subscription · Annual point pool included",
           "features": [
             "Full feature set",
@@ -96,7 +96,7 @@
       "tiers": [
         {
           "name": "Essential",
-          "price": "お問い合わせください",
+          "price": "キャプチャー、観覧、デジタルデータの保管",
           "priceNote": "月額サブスクリプション・年間ポイントプール付き",
           "features": [
             "主要機能を部分提供",
@@ -107,7 +107,7 @@
         {
           "name": "Pro",
           "tag": "人気プラン",
-          "price": "お問い合わせください",
+          "price": "中小企業向け",
           "priceNote": "月額サブスクリプション・年間ポイントプール付き",
           "features": [
             "主要機能をすべて提供",
@@ -118,7 +118,7 @@
         {
           "name": "Enterprise",
           "tag": "",
-          "price": "お問い合わせください",
+          "price": "大事業向け",
           "priceNote": "月額サブスクリプション・年間ポイントプール付き",
           "features": [
             "主要機能をすべて提供",
