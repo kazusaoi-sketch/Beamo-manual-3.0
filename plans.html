@@ -34,8 +34,8 @@
 <section class="plans-hero">
   <div class="hero-label" id="hero-label">PLANS &amp; PRICING</div>
   <h1 id="hero-title">플랜 및 요금제</h1>
-  <p id="hero-subtitle">사이트 규모와 촬영 볼륨에 맞는 플랜을 선택하세요. 모든 플랜은 동기업 구조와 수요에 맞춰 서비스를 제공합니다일한 기능을 제공합니다.</p>
-  <div class="plans-notice" id="plans-notice"></div>
+  <p id="hero-subtitle">사이트 규모와 촬영 볼륨에 맞는 플랜을 선택하세요. 기업 구조와 수요에 맞춰 서비스를 제공합니다.</p>
+  
 </section>
 
 <section class="plans-section">
@@ -59,7 +59,7 @@ const FALLBACK_PLANS_UI = {
     backBtn: "매뉴얼로 돌아가기",
     heroLabel: "PLANS & PRICING",
     heroTitle: "플랜 및 요금제",
-    heroSubtitle: "사이트 규모와 촬영 볼륨에 맞는 플랜을 선택하세요. 모든 플랜은 동기업 구조와 수요에 맞춰 서비스를 제공합니다일한 기능을 제공합니다.",
+    heroSubtitle: "사이트 규모와 촬영 볼륨에 맞는 플랜을 선택하세요. 기업 구조와 수요에 맞춰 서비스를 제공합니다.",
     notice: "정확한 견적은 담당 영업팀에 문의해 주세요.",
     ctaBtn: "영업팀에 문의하기",
     tiers: [
@@ -145,7 +145,7 @@ function renderPlansPage() {
   document.getElementById("hero-label").textContent = p.heroLabel;
   document.getElementById("hero-title").textContent = p.heroTitle;
   document.getElementById("hero-subtitle").textContent = p.heroSubtitle;
-  document.getElementById("plans-notice").textContent = `※ ${p.notice}`;
+  
 
   const contactUrl = CONTACT_URL[currentLang] || CONTACT_URL.en;
   document.getElementById("plans-grid").innerHTML = p.tiers.map((tier) => `
