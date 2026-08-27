@@ -32,8 +32,8 @@
         },
         {
           "name": "Enterprise",
-          "tag": "대기업 특화 플랜",
-          "price": "가격 문의",
+          "tag": "",
+          "price": "대기업 특화 플랜",
           "priceNote": "월 구독 · 연간 포인트 풀 제공",
           "features": [
             "핵심 기능 전체 제공",
