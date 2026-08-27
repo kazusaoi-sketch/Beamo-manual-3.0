@@ -5,7 +5,7 @@
       "heroLabel": "PLANS & PRICING",
       "heroTitle": "플랜 및 요금제",
       "heroSubtitle": "사이트 규모와 촬영 볼륨에 맞는 플랜을 선택하세요. 기업 구조와 수요에 맞춰 서비스를 제공합니다.",
-      "notice": "이 페이지의 플랜 구성 및 가격 정보는 준비 중인 자리표시자(placeholder)입니다. 확정된 내용이 아니며, 정확한 견적은 담당 영업팀에 문의해 주세요.",
+      "notice": "정확한 견적은 담당 영업팀에 문의해 주세요.",
       "ctaBtn": "영업팀에 문의하기",
       "tiers": [
         {
@@ -48,7 +48,7 @@
       "heroLabel": "PLANS & PRICING",
       "heroTitle": "Plans & Pricing",
       "heroSubtitle": "Choose the plan that fits your site size and capture volume. Services are tailored to your organization's structure and needs.",
-      "notice": "The plan structure and pricing on this page are placeholder copy pending confirmation. For an accurate quote, please contact our sales team.",
+      "notice": "For an accurate quote, please contact our sales team.",
       "ctaBtn": "Contact Sales",
       "tiers": [
         {
@@ -91,7 +91,7 @@
       "heroLabel": "PLANS & PRICING",
       "heroTitle": "料金プラン",
       "heroSubtitle": "現場の規模と撮影ボリュームに合わせてプランをお選びください。企業の体制やニーズに合わせてサービスをご提供します。",
-      "notice": "このページのプラン構成および価格情報は準備中の仮の内容（プレースホルダー）です。確定情報ではありませんので、正確なお見積りは営業担当までお問い合わせください。",
+      "notice": "正確なお見積りは営業担当までお問い合わせください。",
       "ctaBtn": "営業担当に問い合わせる",
       "tiers": [
         {
