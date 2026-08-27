@@ -15,15 +15,15 @@
   "i18n": {
     "en": {
       "title": "Manual Video",
-      "html": "<p>We're preparing a video guide that walks through Beamo 3.0 at a glance.</p>\n<p><strong>It's currently in production — once it's ready, you'll be able to watch it right here on this page.</strong></p>"
+      "html": "<p>Link to the video guide that walks through Beamo 3.0 at a glance.</p>\n<p><a href=\"https://youtu.be/baEUoNLjlsY\">https://youtu.be/baEUoNLjlsY</a><br></p>"
     },
     "ko": {
       "title": "매뉴얼 영상",
-      "html": "<p>Beamo 3.0 사용법을 빠르게 확인할 수 있는 영상 가이드를 준비하고 있습니다.</p>\n<p><strong>현재 제작 중이며, 완성되는 대로 이 페이지에서 바로 보실 수 있도록 업데이트할 예정입니다.</strong></p>"
+      "html": "<p>Beamo 3.0 사용법을 빠르게 확인할 수 있는 영상 가이드:&nbsp;</p><p><a href=\"https://youtu.be/baEUoNLjlsY\">https://youtu.be/baEUoNLjlsY</a></p>"
     },
     "ja": {
       "title": "マニュアル動画",
-      "html": "<p>Beamo 3.0の使い方をすぐに確認できる動画ガイドを準備しています。</p>\n<p><strong>現在制作中です。完成次第、このページで直接ご覧いただけるようになります。</strong></p>"
+      "html": "<p>Beamo 3.0の使い方をすぐに確認できる動画ガイドをご覧ください。</p><p><a href=\"https://youtu.be/baEUoNLjlsY\">https://youtu.be/baEUoNLjlsY</a><br></p>"
     }
   }
 }
