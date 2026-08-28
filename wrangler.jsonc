@@ -1,0 +1,9 @@
+{
+  // Beamo 매뉴얼 사이트 — 빌드 없는 순수 정적 사이트 (index.html이 저장소 루트에 있음)
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "beamo-manual-3-0",
+  "compatibility_date": "2026-08-28",
+  "assets": {
+    "directory": "./"
+  }
+}
