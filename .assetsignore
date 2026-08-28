@@ -1,0 +1,17 @@
+# Cloudflare Workers 정적 자산 업로드에서 제외할 항목 (.gitignore 문법)
+# 사이트 동작에 필요 없는 소스/문서가 공개 URL로 서빙되지 않게 합니다.
+
+# 별도 Worker로 배포되는 OAuth 프록시 소스
+admin/oauth-worker/
+
+# 콘텐츠 빌드용 Python 스크립트 (로컬/CI 전용)
+scripts/
+
+# 저장소 안내 문서
+README.md
+
+# 저장소 메타데이터 / 배포 설정 (사이트 동작에 불필요)
+.git/
+.github/
+.gitattributes
+wrangler.jsonc
