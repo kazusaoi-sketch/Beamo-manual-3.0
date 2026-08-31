@@ -30,3 +30,4 @@ wrangler deploy
 1. 위에서 나온 워커 주소를 GitHub OAuth App의 **Authorization callback URL**에 `/callback`을 붙여서 등록 (또는 먼저 임시 URL로 등록해뒀다면 실제 주소로 수정).
 2. `../config.yml`의 `backend.base_url`을 이 워커 주소로 변경 (`REPLACE-WITH-YOUR-WORKER-URL` 부분).
 3. 커밋 후 사이트에 반영되면 `/admin`에서 로그인 테스트.
+
