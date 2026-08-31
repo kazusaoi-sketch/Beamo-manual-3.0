@@ -1,10 +1,9 @@
 backend:
   name: github
-  repo: saranmoon-ai/Beamo-manual-3.0
+  repo: kazusaoi-sketch/Beamo-manual-3.0
   branch: main
-  base_url: https://beamo-cms-oauth.saran-moon.workers.dev
+  base_url: https://beamo-manual-oauth.kazusa-oi.workers.dev
   auth_endpoint: auth
-
 # 문서별 이미지 폴더 패턴과 안 맞는 항목(로고 등 사이트 공통 자산)을 위한 기본값
 media_folder: images
 public_folder: images
