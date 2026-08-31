@@ -33,6 +33,7 @@ content/articles 경로가 변경되어 push되면 GitHub Actions(.github/workfl
 매뉴얼 문서(content/articles) 변경사항이 자동으로 기록됩니다. 최신 항목이 위에 오도록 정렬됩니다.
 
 - 2026-08-31: '1.1 Beamo 3.0이란 무엇인가?' 문서 수정 (`s1-1`)
+- 2026-08-31: '1.1 Beamo 3.0이란 무엇인가?' 문서 수정 (`s1-1`)
 - 2026-08-27: '매뉴얼 영상' 문서 수정 (`qm-manual-video`)
 - 2026-08-27: 'Plan/Pricing' 페이지 신규 추가 (`plans.html`)
 - 2026-08-27: '매뉴얼 영상' 문서 수정 (`qm-manual-video`)
