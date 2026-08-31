@@ -2,7 +2,8 @@
 
 beamo 제품의 통합 사용자 매뉴얼을 한국어/영어/일본어 3개 언어로 제공하는 정적 사이트입니다. Node.js나 별도 빌드 도구 없이, 브라우저가 파일을 그대로 읽는 순수 HTML/CSS/JS 구조입니다.
 
-라이브 사이트는 https://saranmoon-ai.github.io/Beamo-manual-3.0/ 이고, 편집기(Decap CMS)는 https://saranmoon-ai.github.io/Beamo-manual-3.0/admin/ 입니다. 내부 인수인계 문서(컨플루언스)는 https://3iai.atlassian.net/wiki/spaces/~712020085c34af8692425faff98ea33c461fac/pages/2966814759/Beamo+3.0 에 있습니다.
+라이브 사이트는 https://beamo-manual-3-0.kazusa-oi.workers.dev/ 이고, 편집기(Decap CMS)는 https://beamo-manual-3-0.kazusa-oi.workers.dev/admin/ 입니다. 내부 인수인계 문서(컨플루언스)는 https://3iai.atlassian.net/wiki/spaces/~712020085c34af8692425faff98ea33c461fac/pages/2966814759/Beamo+3.0 에 있습니다.
+
 
 이 README는 저장소를 처음 여는 사람이 전체 구조를 빠르게 파악할 수 있도록 요약한 것입니다. 세부 운영 절차(계정/시크릿, 트러블슈팅 등)는 위 컨플루언스 문서를 참고하세요.
 
